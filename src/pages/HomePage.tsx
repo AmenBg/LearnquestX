@@ -3,24 +3,24 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
-import { Zap, BookOpen, Trophy, Flame, ArrowRight } from 'lucide-react';
+import { Zap, BookOpen, Trophy, Flame, ArrowRight, Gamepad2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
 export default function HomePage() {
-  const { language } = useApp();
+  const { language, authUser } = useApp();
 
   const features = [
     { icon: <Zap className="h-6 w-6 text-primary" />, title: 'Earn XP', desc: 'Gain experience points with every lesson and quiz you complete.' },
-    { icon: <Flame className="h-6 w-6 text-streak" />, title: 'Daily Streaks', desc: 'Build a streak by learning every day. Don\'t break the chain!' },
+    { icon: <Flame className="h-6 w-6 text-streak" />, title: 'Daily Streaks', desc: "Build a streak by learning every day. Don't break the chain!" },
     { icon: <Trophy className="h-6 w-6 text-secondary" />, title: 'Leaderboards', desc: 'Compete with learners around the world and climb the ranks.' },
-    { icon: <BookOpen className="h-6 w-6 text-level-glow" />, title: '200+ Levels', desc: 'Each subject has 200 levels of progressively harder content.' },
+    { icon: <BookOpen className="h-6 w-6 text-level-glow" />, title: 'AI Exercises', desc: 'AI-generated questions that never repeat. Always fresh challenges.' },
+    { icon: <Gamepad2 className="h-6 w-6 text-accent" />, title: 'XP Game Store', desc: 'Spend XP to unlock 20+ mini-games as rewards for learning.' },
   ];
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      {/* Hero */}
       <section className="relative flex min-h-screen items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0">
           <img src={heroBg} alt="" className="h-full w-full object-cover opacity-30" />
@@ -28,13 +28,9 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-10 container mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
-              <Zap className="h-4 w-4" /> Gamified Learning Platform
+              <Zap className="h-4 w-4" /> AI-Powered Learning Platform
             </div>
             <h1 className="mb-6 text-5xl font-bold leading-tight text-foreground md:text-7xl">
               {t('home.title', language).split(' ').map((word, i) => (
@@ -48,10 +44,10 @@ export default function HomePage() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                to="/onboarding"
+                to={authUser ? '/dashboard' : '/auth'}
                 className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition-all hover:opacity-90 glow-primary"
               >
-                {t('home.cta', language)}
+                {authUser ? 'Go to Dashboard' : t('home.cta', language)}
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <Link
@@ -65,9 +61,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features */}
       <section className="container mx-auto px-4 py-24">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {features.map((f, i) => (
             <motion.div
               key={i}

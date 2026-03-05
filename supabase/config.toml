@@ -1,0 +1,4 @@
+project_id = "geifydkzmcdsyszxsrov"
+
+[functions.generate-exercises]
+verify_jwt = false
