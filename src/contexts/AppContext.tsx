@@ -1,20 +1,29 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Language } from '@/lib/i18n';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
+import type { Tables } from '@/integrations/supabase/types';
 
-interface UserProfile {
-  name: string;
-  age: number;
-  language: Language;
-  xp: number;
-  level: number;
-  streak: number;
-}
+type Profile = Tables<'profiles'>;
 
 interface AppContextType {
-  user: UserProfile | null;
-  setUser: (user: UserProfile | null) => void;
+  // Auth
+  authUser: ReturnType<typeof useAuth>['user'];
+  session: ReturnType<typeof useAuth>['session'];
+  authLoading: boolean;
+  signUp: ReturnType<typeof useAuth>['signUp'];
+  signIn: ReturnType<typeof useAuth>['signIn'];
+  signOut: ReturnType<typeof useAuth>['signOut'];
+  // Profile
+  profile: Profile | null;
+  profileLoading: boolean;
+  updateProfile: ReturnType<typeof useProfile>['updateProfile'];
+  addXp: ReturnType<typeof useProfile>['addXp'];
+  refetchProfile: ReturnType<typeof useProfile>['refetch'];
+  // Language
   language: Language;
   setLanguage: (lang: Language) => void;
+  // Onboarding
   isOnboarded: boolean;
   setIsOnboarded: (v: boolean) => void;
 }
@@ -22,19 +31,43 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>({
-    name: 'Player',
-    age: 14,
-    language: 'en',
-    xp: 8750,
-    level: 25,
-    streak: 12,
-  });
+  const auth = useAuth();
+  const { profile, loading: profileLoading, updateProfile, addXp, refetch: refetchProfile } = useProfile(auth.user?.id);
   const [language, setLanguage] = useState<Language>('en');
-  const [isOnboarded, setIsOnboarded] = useState(true);
+  const [isOnboarded, setIsOnboarded] = useState(false);
+
+  // Sync language from profile
+  useEffect(() => {
+    if (profile?.preferred_language) {
+      setLanguage(profile.preferred_language as Language);
+    }
+  }, [profile?.preferred_language]);
+
+  // Check onboarding status
+  useEffect(() => {
+    if (profile && profile.country !== 'US') {
+      setIsOnboarded(true);
+    }
+  }, [profile]);
 
   return (
-    <AppContext.Provider value={{ user, setUser, language, setLanguage, isOnboarded, setIsOnboarded }}>
+    <AppContext.Provider value={{
+      authUser: auth.user,
+      session: auth.session,
+      authLoading: auth.loading,
+      signUp: auth.signUp,
+      signIn: auth.signIn,
+      signOut: auth.signOut,
+      profile,
+      profileLoading,
+      updateProfile,
+      addXp,
+      refetchProfile,
+      language,
+      setLanguage,
+      isOnboarded,
+      setIsOnboarded,
+    }}>
       {children}
     </AppContext.Provider>
   );

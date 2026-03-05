@@ -11,6 +11,10 @@ import LearningPage from "./pages/LearningPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import ProfilePage from "./pages/ProfilePage";
 import OnboardingPage from "./pages/OnboardingPage";
+import AuthPage from "./pages/AuthPage";
+import GameStorePage from "./pages/GameStorePage";
+import PlayGamePage from "./pages/PlayGamePage";
+import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,12 +28,16 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/subjects" element={<SubjectsPage />} />
             <Route path="/learn/:subjectId" element={<LearningPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route path="/store" element={<GameStorePage />} />
+            <Route path="/play/:id" element={<PlayGamePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
