@@ -14,6 +14,7 @@ import OnboardingPage from "./pages/OnboardingPage";
 import AuthPage from "./pages/AuthPage";
 import GameStorePage from "./pages/GameStorePage";
 import PlayGamePage from "./pages/PlayGamePage";
+import ChessPage from "./pages/ChessPage";
 import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 
