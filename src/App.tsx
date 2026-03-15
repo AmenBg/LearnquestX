@@ -38,6 +38,7 @@ const App = () => (
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/store" element={<GameStorePage />} />
             <Route path="/play/:id" element={<PlayGamePage />} />
+            <Route path="/chess" element={<ChessPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
