@@ -16,6 +16,10 @@ import GameStorePage from "./pages/GameStorePage";
 import PlayGamePage from "./pages/PlayGamePage";
 import ChessPage from "./pages/ChessPage";
 import SettingsPage from "./pages/SettingsPage";
+import QuizArenaPage from "./pages/QuizArenaPage";
+import AchievementsPage from "./pages/AchievementsPage";
+import AIOpponentPage from "./pages/AIOpponentPage";
+import MultiplayerPage from "./pages/MultiplayerPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +44,10 @@ const App = () => (
             <Route path="/play/:id" element={<PlayGamePage />} />
             <Route path="/chess" element={<ChessPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/arena" element={<QuizArenaPage />} />
+            <Route path="/achievements" element={<AchievementsPage />} />
+            <Route path="/ai-opponent" element={<AIOpponentPage />} />
+            <Route path="/multiplayer" element={<MultiplayerPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
