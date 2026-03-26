@@ -37,6 +37,34 @@ export default function AIOpponentPage() {
   const [timeLeft, setTimeLeft] = useState(15);
   const timerRef = useRef<NodeJS.Timeout>();
 
+  // Timer
+  useEffect(() => {
+    if (phase !== 'playing' || selected !== null) return;
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) { handleAnswer(-1); return 15; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timerRef.current);
+  }, [phase, currentQ, selected]);
+
+  // AI answer simulation
+  useEffect(() => {
+    if (phase !== 'playing' || selected !== null || questions.length === 0) return;
+    const q = questions[currentQ];
+    const delay = (difficulty.minTime + Math.random() * (difficulty.maxTime - difficulty.minTime)) * 1000;
+    const correct = Math.random() < difficulty.accuracy;
+    const aiIdx = correct ? q.correct : [0, 1, 2, 3].filter(i => i !== q.correct)[Math.floor(Math.random() * 3)];
+
+    const timeout = setTimeout(() => {
+      if (selected === null) {
+        setAiAnswer(aiIdx);
+      }
+    }, delay);
+    return () => clearTimeout(timeout);
+  }, [phase, currentQ, selected, questions]);
+
   if (authLoading) return <div className="flex min-h-screen items-center justify-center bg-background text-foreground">Loading...</div>;
   if (!authUser) return <Navigate to="/auth" />;
 

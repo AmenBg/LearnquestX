@@ -30,6 +30,18 @@ export default function MultiplayerPage() {
   const [timeLeft, setTimeLeft] = useState(15);
   const [matchType, setMatchType] = useState<'1v1' | 'group'>('1v1');
 
+  // Timer
+  useEffect(() => {
+    if (phase !== 'playing' || selected !== null) return;
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) { handleAnswer(-1); return 15; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [phase, currentQ, selected]);
+
   if (authLoading) return <div className="flex min-h-screen items-center justify-center bg-background text-foreground">Loading...</div>;
   if (!authUser || !profile) return <Navigate to="/auth" />;
 
