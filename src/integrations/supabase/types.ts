@@ -47,6 +47,47 @@ export type Database = {
         }
         Relationships: []
       }
+      match_players: {
+        Row: {
+          answers: Json
+          finished: boolean
+          id: string
+          joined_at: string
+          match_id: string
+          player_name: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          finished?: boolean
+          id?: string
+          joined_at?: string
+          match_id: string
+          player_name?: string
+          score?: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          finished?: boolean
+          id?: string
+          joined_at?: string
+          match_id?: string
+          player_name?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_players_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           country: string
@@ -119,6 +160,39 @@ export type Database = {
           purchased_at?: string
           user_id?: string
           xp_cost?: number
+        }
+        Relationships: []
+      }
+      quiz_matches: {
+        Row: {
+          created_at: string
+          finished_at: string | null
+          id: string
+          match_type: string
+          max_players: number
+          question_data: Json
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          match_type?: string
+          max_players?: number
+          question_data?: Json
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          match_type?: string
+          max_players?: number
+          question_data?: Json
+          started_at?: string | null
+          status?: string
         }
         Relationships: []
       }
