@@ -160,18 +160,6 @@ export default function MultiplayerPage() {
     return () => { supabase.removeChannel(channel); };
   };
 
-  // Timer
-  useEffect(() => {
-    if (phase !== 'playing' || selected !== null) return;
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) { handleAnswer(-1); return 15; }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [phase, currentQ, selected]);
-
   const handleAnswer = async (idx: number) => {
     if (selected !== null) return;
     setSelected(idx);
