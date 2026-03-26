@@ -35,6 +35,21 @@ export default function QuizArenaPage() {
   const timerRef = useRef<NodeJS.Timeout>();
   const startTimeRef = useRef<number>(0);
 
+  // Timer
+  useEffect(() => {
+    if (phase !== 'playing' || selected !== null) return;
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          handleAnswer(-1);
+          return 15;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timerRef.current);
+  }, [phase, currentQ, selected]);
+
   if (authLoading) return <div className="flex min-h-screen items-center justify-center bg-background text-foreground">Loading...</div>;
   if (!authUser) return <Navigate to="/auth" />;
 
