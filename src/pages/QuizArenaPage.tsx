@@ -104,20 +104,6 @@ export default function QuizArenaPage() {
     }
   };
 
-  // Timer
-  useEffect(() => {
-    if (phase !== 'playing' || selected !== null) return;
-    timerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          handleAnswer(-1); // time out
-          return 15;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timerRef.current);
-  }, [phase, currentQ, selected]);
 
   const handleAnswer = async (idx: number) => {
     if (selected !== null) return;
