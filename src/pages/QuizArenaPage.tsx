@@ -69,7 +69,7 @@ export default function QuizArenaPage() {
       const { data, error } = await supabase.functions.invoke('generate-exercises', {
         body: {
           subject: 'Mixed (Mathematics, Science, Arabic, French, General Knowledge, Logic)',
-          country: profile?.country || 'TN',
+          country: 'TN',
           educationLevel: profile?.education_level || 'middle_school',
           grade: profile?.grade || '7',
           term: profile?.current_term || 'term_1',
