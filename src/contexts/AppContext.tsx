@@ -43,9 +43,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [profile?.preferred_language]);
 
-  // Check onboarding status - user is onboarded if they have a name set (not default 'Player')
+  // Check onboarding status
   useEffect(() => {
-    if (profile && profile.name && profile.name !== 'Player') {
+    if (profile && profile.country !== 'US') {
       setIsOnboarded(true);
     }
   }, [profile]);

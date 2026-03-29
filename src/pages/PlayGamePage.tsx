@@ -936,7 +936,9 @@ export default function PlayGamePage() {
 
   const handleFinish = async (score: number) => {
     setFinalScore(score);
-    // Games are rewards — no XP from games
+    // Reduced XP for games (max 15 XP per game)
+    const xpEarned = Math.min(15, Math.round(score * 0.5));
+    if (xpEarned > 0) await addXp(xpEarned);
   };
 
   const GameComponent = getGameComponent(game.id);
@@ -957,7 +959,7 @@ export default function PlayGamePage() {
             <Trophy className="mx-auto mb-4 h-16 w-16 text-primary" />
             <h2 className="mb-2 text-2xl font-bold text-foreground">Game Over!</h2>
             <p className="mb-2 text-lg text-muted-foreground">Score: {finalScore}</p>
-            <p className="mb-6 text-xs text-muted-foreground">Games are rewards — XP comes from learning!</p>
+            <p className="mb-6 text-sm text-primary font-semibold">+{Math.min(15, Math.round(finalScore * 0.5))} XP earned!</p>
             <div className="flex gap-3 justify-center">
               <button onClick={() => { setFinalScore(null); setGameKey(k => k + 1); }} className="flex items-center gap-2 rounded-xl border border-border bg-card px-6 py-3 font-semibold text-foreground">
                 <RotateCcw className="h-4 w-4" /> Replay

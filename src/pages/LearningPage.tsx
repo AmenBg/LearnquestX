@@ -40,7 +40,7 @@ export default function LearningPage() {
       const { data, error } = await supabase.functions.invoke('generate-exercises', {
         body: {
           subject: subject?.name || subjectId,
-          country: 'TN',
+          country: profile?.country || 'US',
           educationLevel: profile?.education_level || 'middle_school',
           grade: profile?.grade || '7',
           term: profile?.current_term || 'term_1',

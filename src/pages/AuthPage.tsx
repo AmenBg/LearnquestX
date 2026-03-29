@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { motion } from 'framer-motion';
 import { Zap, Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
@@ -8,9 +8,6 @@ import { toast } from 'sonner';
 export default function AuthPage() {
   const { signUp, signIn } = useApp();
   const navigate = useNavigate();
-  const location = useLocation();
-  const preferredLang = (location.state as any)?.preferredLang;
-
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,7 +33,7 @@ export default function AuthPage() {
         toast.error(error.message);
       } else {
         toast.success('Account created! Please check your email to verify.');
-        navigate('/onboarding', { state: { preferredLang } });
+        navigate('/onboarding');
       }
     }
     setLoading(false);
