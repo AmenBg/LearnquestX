@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
-import { Zap, Home, BookOpen, Trophy, User, Menu, X, Gamepad2, Settings, LogIn, Swords, Bot, Users } from 'lucide-react';
+import { Zap, Home, BookOpen, Trophy, Menu, X, Gamepad2, Settings, LogIn } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
