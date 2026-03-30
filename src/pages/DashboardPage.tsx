@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar';
 import StatCard from '@/components/StatCard';
 import SubjectCard from '@/components/SubjectCard';
 import { motion } from 'framer-motion';
-import { Zap, Flame, Star, ArrowRight, Gamepad2, Swords, Bot, Users, Award } from 'lucide-react';
+import { Zap, Flame, Star, ArrowRight, Gamepad2, Swords, Award } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 
 export default function DashboardPage() {
@@ -46,27 +46,22 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
-        {/* Quick Actions */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Link to="/arena" className="group rounded-xl border border-primary/20 bg-primary/5 p-5 transition-all hover:border-primary/40 hover:scale-[1.02]">
-            <Swords className="h-8 w-8 text-primary mb-2" />
-            <h3 className="font-bold text-foreground">Quiz Arena</h3>
-            <p className="text-xs text-muted-foreground">Random questions, earn XP!</p>
+        {/* Main Cards — Arena, Games, Achievements */}
+        <div className="mb-8 grid gap-4 sm:grid-cols-3">
+          <Link to="/arena" className="group rounded-xl border border-primary/20 bg-primary/5 p-6 transition-all hover:border-primary/40 hover:scale-[1.02]">
+            <Swords className="h-10 w-10 text-primary mb-3" />
+            <h3 className="text-lg font-bold text-foreground">Quiz Arena</h3>
+            <p className="text-sm text-muted-foreground">Answer random questions & earn XP</p>
           </Link>
-          <Link to="/multiplayer" className="group rounded-xl border border-secondary/20 bg-secondary/5 p-5 transition-all hover:border-secondary/40 hover:scale-[1.02]">
-            <Users className="h-8 w-8 text-secondary mb-2" />
-            <h3 className="font-bold text-foreground">Multiplayer</h3>
-            <p className="text-xs text-muted-foreground">Battle real players!</p>
+          <Link to="/store" className="group rounded-xl border border-secondary/20 bg-secondary/5 p-6 transition-all hover:border-secondary/40 hover:scale-[1.02]">
+            <Gamepad2 className="h-10 w-10 text-secondary mb-3" />
+            <h3 className="text-lg font-bold text-foreground">Games</h3>
+            <p className="text-sm text-muted-foreground">Play fun mini-games as rewards</p>
           </Link>
-          <Link to="/ai-opponent" className="group rounded-xl border border-accent/20 bg-accent/5 p-5 transition-all hover:border-accent/40 hover:scale-[1.02]">
-            <Bot className="h-8 w-8 text-accent mb-2" />
-            <h3 className="font-bold text-foreground">AI Opponent</h3>
-            <p className="text-xs text-muted-foreground">Challenge AI bots!</p>
-          </Link>
-          <Link to="/achievements" className="group rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/20 hover:scale-[1.02]">
-            <Award className="h-8 w-8 text-streak mb-2" />
-            <h3 className="font-bold text-foreground">Achievements</h3>
-            <p className="text-xs text-muted-foreground">Track your progress!</p>
+          <Link to="/achievements" className="group rounded-xl border border-accent/20 bg-accent/5 p-6 transition-all hover:border-accent/40 hover:scale-[1.02]">
+            <Award className="h-10 w-10 text-accent mb-3" />
+            <h3 className="text-lg font-bold text-foreground">Achievements</h3>
+            <p className="text-sm text-muted-foreground">Track your progress & earn badges</p>
           </Link>
         </div>
 
