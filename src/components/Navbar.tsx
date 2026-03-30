@@ -17,7 +17,6 @@ export default function Navbar() {
     { to: '/subjects', label: t('nav.subjects', language), icon: BookOpen },
     { to: '/store', label: 'Store', icon: Gamepad2 },
     { to: '/leaderboard', label: t('nav.leaderboard', language), icon: Trophy },
-    { to: '/achievements', label: 'Achievements', icon: Award },
   ];
 
   return (
