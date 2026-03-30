@@ -16,7 +16,7 @@ import GameStorePage from "./pages/GameStorePage";
 import PlayGamePage from "./pages/PlayGamePage";
 import ChessPage from "./pages/ChessPage";
 import SettingsPage from "./pages/SettingsPage";
-import QuizArenaPage from "./pages/QuizArenaPage";
+
 import AchievementsPage from "./pages/AchievementsPage";
 import AIOpponentPage from "./pages/AIOpponentPage";
 import MultiplayerPage from "./pages/MultiplayerPage";
