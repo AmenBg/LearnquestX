@@ -67,14 +67,9 @@ export default function DashboardPage() {
 
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold text-foreground">{t('dashboard.continue', language)}</h2>
-          <div className="flex gap-3">
-            <Link to="/store" className="flex items-center gap-1 text-sm text-accent hover:underline">
-              <Gamepad2 className="h-4 w-4" /> Game Store
-            </Link>
-            <Link to="/subjects" className="flex items-center gap-1 text-sm text-primary hover:underline">
-              View all <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+          <Link to="/subjects" className="flex items-center gap-1 text-sm text-primary hover:underline">
+            View all <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {subjects.slice(0, 4).map((s, i) => (
