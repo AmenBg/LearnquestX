@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar';
 import StatCard from '@/components/StatCard';
 import SubjectCard from '@/components/SubjectCard';
 import { motion } from 'framer-motion';
-import { Zap, Flame, Star, ArrowRight, Gamepad2, Swords, Award } from 'lucide-react';
+import { Zap, Flame, Star, ArrowRight, Gamepad2, BookOpen, Award } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 
 export default function DashboardPage() {
@@ -46,12 +46,12 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
-        {/* Main Cards — Arena, Games, Achievements */}
+        {/* Main Cards — Exercises, Games, Achievements */}
         <div className="mb-8 grid gap-4 sm:grid-cols-3">
-          <Link to="/arena" className="group rounded-xl border border-primary/20 bg-primary/5 p-6 transition-all hover:border-primary/40 hover:scale-[1.02]">
-            <Swords className="h-10 w-10 text-primary mb-3" />
-            <h3 className="text-lg font-bold text-foreground">Quiz Arena</h3>
-            <p className="text-sm text-muted-foreground">Answer random questions & earn XP</p>
+          <Link to="/subjects" className="group rounded-xl border border-primary/20 bg-primary/5 p-6 transition-all hover:border-primary/40 hover:scale-[1.02]">
+            <BookOpen className="h-10 w-10 text-primary mb-3" />
+            <h3 className="text-lg font-bold text-foreground">Start Learning</h3>
+            <p className="text-sm text-muted-foreground">Practice exercises & earn XP</p>
           </Link>
           <Link to="/store" className="group rounded-xl border border-secondary/20 bg-secondary/5 p-6 transition-all hover:border-secondary/40 hover:scale-[1.02]">
             <Gamepad2 className="h-10 w-10 text-secondary mb-3" />
@@ -67,14 +67,9 @@ export default function DashboardPage() {
 
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold text-foreground">{t('dashboard.continue', language)}</h2>
-          <div className="flex gap-3">
-            <Link to="/store" className="flex items-center gap-1 text-sm text-accent hover:underline">
-              <Gamepad2 className="h-4 w-4" /> Game Store
-            </Link>
-            <Link to="/subjects" className="flex items-center gap-1 text-sm text-primary hover:underline">
-              View all <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+          <Link to="/subjects" className="flex items-center gap-1 text-sm text-primary hover:underline">
+            View all <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {subjects.slice(0, 4).map((s, i) => (

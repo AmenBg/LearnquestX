@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
-import { Zap, Home, BookOpen, Trophy, User, Menu, X, Gamepad2, Settings, LogIn, Swords, Bot, Users } from 'lucide-react';
+import { Zap, Home, BookOpen, Trophy, Menu, X, Gamepad2, Settings, LogIn } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -13,9 +13,8 @@ export default function Navbar() {
   const links = [
     { to: '/', label: t('nav.home', language), icon: Home },
     { to: '/dashboard', label: t('nav.dashboard', language), icon: Zap },
-    { to: '/arena', label: 'Arena', icon: Swords },
     { to: '/subjects', label: t('nav.subjects', language), icon: BookOpen },
-    { to: '/store', label: 'Store', icon: Gamepad2 },
+    { to: '/store', label: 'Games', icon: Gamepad2 },
     { to: '/leaderboard', label: t('nav.leaderboard', language), icon: Trophy },
   ];
 
