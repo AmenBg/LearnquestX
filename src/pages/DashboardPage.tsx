@@ -46,12 +46,12 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
-        {/* Main Cards — Arena, Games, Achievements */}
+        {/* Main Cards — Exercises, Games, Achievements */}
         <div className="mb-8 grid gap-4 sm:grid-cols-3">
-          <Link to="/arena" className="group rounded-xl border border-primary/20 bg-primary/5 p-6 transition-all hover:border-primary/40 hover:scale-[1.02]">
-            <Swords className="h-10 w-10 text-primary mb-3" />
-            <h3 className="text-lg font-bold text-foreground">Quiz Arena</h3>
-            <p className="text-sm text-muted-foreground">Answer random questions & earn XP</p>
+          <Link to="/subjects" className="group rounded-xl border border-primary/20 bg-primary/5 p-6 transition-all hover:border-primary/40 hover:scale-[1.02]">
+            <BookOpen className="h-10 w-10 text-primary mb-3" />
+            <h3 className="text-lg font-bold text-foreground">Start Learning</h3>
+            <p className="text-sm text-muted-foreground">Practice exercises & earn XP</p>
           </Link>
           <Link to="/store" className="group rounded-xl border border-secondary/20 bg-secondary/5 p-6 transition-all hover:border-secondary/40 hover:scale-[1.02]">
             <Gamepad2 className="h-10 w-10 text-secondary mb-3" />
