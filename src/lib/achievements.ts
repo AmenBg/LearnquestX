@@ -39,7 +39,7 @@ export const achievements: Achievement[] = [
   { id: 'fast_10_row', name: 'Quicksilver', description: '10 fast answers in a row', icon: '💨', category: 'speed', xpReward: 80 },
   { id: 'quiz_under_1min', name: 'Minute Master', description: 'Complete a quiz in under 1 minute', icon: '⏱️', category: 'speed', xpReward: 30 },
   { id: 'quiz_under_30s', name: 'Time Breaker', description: 'Complete a quiz in under 30 seconds', icon: '🕐', category: 'speed', xpReward: 60 },
-  { id: 'arena_speed_10', name: 'Arena Sprinter', description: 'Complete 10 Arena sessions quickly', icon: '🏃', category: 'speed', xpReward: 50 },
+  { id: 'exercise_speed_10', name: 'Quick Learner', description: 'Complete 10 exercises quickly', icon: '🏃', category: 'speed', xpReward: 50 },
   { id: 'reaction_master', name: 'Reflex King', description: 'React in under 200ms in a game', icon: '👁️', category: 'speed', xpReward: 25 },
   { id: 'speed_legend', name: 'Speed Legend', description: '100 fast correct answers total', icon: '🌩️', category: 'speed', xpReward: 200, title: 'Speed Legend' },
 
