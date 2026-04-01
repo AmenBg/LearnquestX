@@ -80,6 +80,7 @@ export default function MultiplayerPage() {
         match_type: matchType,
         max_players: matchType === '1v1' ? 2 : 5,
         question_data: [],
+        created_by: authUser.id,
       }).select().single();
 
       if (newMatch) {
