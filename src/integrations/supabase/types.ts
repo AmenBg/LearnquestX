@@ -255,7 +255,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_xp_rpc: { Args: { amount: number }; Returns: undefined }
+      purchase_game_rpc: {
+        Args: { p_game_id: string; p_xp_cost: number }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
