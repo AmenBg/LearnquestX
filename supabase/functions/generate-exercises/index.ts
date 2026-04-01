@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,7 +10,47 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { subject, country, educationLevel, grade, term, language, count = 5 } = await req.json();
+    // Authenticate the user
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Missing authorization" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const body = await req.json();
+
+    // Input validation
+    const subject = typeof body.subject === "string" ? body.subject.slice(0, 100) : "";
+    const country = typeof body.country === "string" ? body.country.slice(0, 50) : "";
+    const educationLevel = typeof body.educationLevel === "string" ? body.educationLevel.slice(0, 50) : "";
+    const grade = typeof body.grade === "string" ? body.grade.slice(0, 10) : "";
+    const term = typeof body.term === "string" ? body.term.slice(0, 20) : "";
+    const language = typeof body.language === "string" ? body.language.slice(0, 5) : "en";
+    const count = typeof body.count === "number" && body.count >= 1 && body.count <= 20 ? body.count : 5;
+
+    if (!subject || !country || !grade) {
+      return new Response(JSON.stringify({ error: "Missing required fields: subject, country, grade" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -117,7 +158,7 @@ Rules:
     });
   } catch (e) {
     console.error("generate-exercises error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
+    return new Response(JSON.stringify({ error: "An error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
