@@ -33,23 +33,14 @@ export default function GameStorePage() {
     }
     setPurchasing(gameId);
     
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ xp: profile.xp - xpCost })
-      .eq('user_id', authUser.id);
+    // Use server-side RPC for atomic, validated purchase
+    const { error } = await supabase.rpc('purchase_game_rpc', {
+      p_game_id: gameId,
+      p_xp_cost: xpCost,
+    });
 
-    if (updateError) {
-      toast.error('Failed to purchase');
-      setPurchasing(null);
-      return;
-    }
-
-    const { error: insertError } = await supabase
-      .from('purchased_games')
-      .insert({ user_id: authUser.id, game_id: gameId, xp_cost: xpCost });
-
-    if (insertError) {
-      toast.error('Failed to record purchase');
+    if (error) {
+      toast.error(error.message?.includes('already owned') ? 'You already own this game!' : 'Failed to purchase');
     } else {
       toast.success('Game unlocked! 🎮');
       setPurchasedIds(prev => new Set([...prev, gameId]));

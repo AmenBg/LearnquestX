@@ -32,10 +32,10 @@ export function useProfile(userId: string | undefined) {
   };
 
   const addXp = async (amount: number) => {
-    if (!profile) return;
-    const newXp = profile.xp + amount;
-    const newLevel = Math.floor(newXp / 400) + 1;
-    await updateProfile({ xp: newXp, level: newLevel, last_activity_date: new Date().toISOString().split('T')[0] });
+    if (!profile || amount <= 0) return;
+    // Use server-side RPC to prevent client manipulation
+    const { error } = await supabase.rpc('add_xp_rpc', { amount });
+    if (!error) await fetchProfile();
   };
 
   return { profile, loading, updateProfile, addXp, refetch: fetchProfile };
