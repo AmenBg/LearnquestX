@@ -166,6 +166,7 @@ export type Database = {
       quiz_matches: {
         Row: {
           created_at: string
+          created_by: string | null
           finished_at: string | null
           id: string
           match_type: string
@@ -176,6 +177,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           finished_at?: string | null
           id?: string
           match_type?: string
@@ -186,6 +188,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           finished_at?: string | null
           id?: string
           match_type?: string
