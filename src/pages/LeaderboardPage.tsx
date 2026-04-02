@@ -22,12 +22,12 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     supabase
-      .from('leaderboard_view' as any)
+      .from('profiles')
       .select('name, xp, level, streak, country, user_id')
       .order('xp', { ascending: false })
       .limit(50)
       .then(({ data }) => {
-        if (data) setEntries(data);
+        if (data) setEntries(data.map(d => ({ name: d.name, xp: d.xp, level: d.level, streak: d.streak, country: d.country, user_id: d.user_id })));
         setLoading(false);
       });
   }, []);
