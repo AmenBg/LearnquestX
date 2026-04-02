@@ -22,7 +22,7 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     supabase
-      .from('profiles')
+      .from('leaderboard_view' as any)
       .select('name, xp, level, streak, country, user_id')
       .order('xp', { ascending: false })
       .limit(50)
