@@ -255,7 +255,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      leaderboard_view: {
+        Row: {
+          country: string | null
+          level: number | null
+          name: string | null
+          streak: number | null
+          user_id: string | null
+          xp: number | null
+        }
+        Insert: {
+          country?: string | null
+          level?: number | null
+          name?: string | null
+          streak?: number | null
+          user_id?: string | null
+          xp?: number | null
+        }
+        Update: {
+          country?: string | null
+          level?: number | null
+          name?: string | null
+          streak?: number | null
+          user_id?: string | null
+          xp?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_xp_rpc: { Args: { amount: number }; Returns: undefined }
