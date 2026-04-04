@@ -3,7 +3,7 @@ import { t } from '@/lib/i18n';
 import { subjects } from '@/lib/gameData';
 import Navbar from '@/components/Navbar';
 import StatCard from '@/components/StatCard';
-import SubjectCard from '@/components/SubjectCard';
+
 import { motion } from 'framer-motion';
 import { Zap, Flame, Star, ArrowRight, Gamepad2, BookOpen, Award } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
