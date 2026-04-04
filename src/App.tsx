@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "@/contexts/AppContext";
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
-import SubjectsPage from "./pages/SubjectsPage";
+
 import LearningPage from "./pages/LearningPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -36,7 +36,7 @@ const App = () => (
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/subjects" element={<SubjectsPage />} />
+            
             <Route path="/learn/:subjectId" element={<LearningPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
