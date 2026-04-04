@@ -152,6 +152,30 @@ Rules:
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     if (toolCall?.function?.arguments) {
       const parsed = JSON.parse(toolCall.function.arguments);
+      
+      // Validate every question before returning
+      if (parsed.questions && Array.isArray(parsed.questions)) {
+        const validated = parsed.questions.filter((q: any) => {
+          if (!q.question || !Array.isArray(q.options) || q.options.length !== 4) return false;
+          if (typeof q.correct !== 'number' || q.correct < 0 || q.correct > 3) return false;
+          if (!q.explanation) return false;
+          // Ensure correct index points to a non-empty option
+          if (!q.options[q.correct] || q.options[q.correct].trim() === '') return false;
+          return true;
+        });
+        
+        if (validated.length === 0) {
+          return new Response(JSON.stringify({ error: "All generated questions failed validation" }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        
+        return new Response(JSON.stringify({ questions: validated }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      
       return new Response(JSON.stringify(parsed), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
