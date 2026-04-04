@@ -48,7 +48,7 @@ export default function DashboardPage() {
 
         {/* Main Cards — Exercises, Games, Achievements */}
         <div className="mb-8 grid gap-4 sm:grid-cols-3">
-          <Link to="/subjects" className="group rounded-xl border border-primary/20 bg-primary/5 p-6 transition-all hover:border-primary/40 hover:scale-[1.02]">
+          <Link to={`/learn/${subjects[0]?.id || 'math'}`} className="group rounded-xl border border-primary/20 bg-primary/5 p-6 transition-all hover:border-primary/40 hover:scale-[1.02]">
             <BookOpen className="h-10 w-10 text-primary mb-3" />
             <h3 className="text-lg font-bold text-foreground">Start Learning</h3>
             <p className="text-sm text-muted-foreground">Practice exercises & earn XP</p>
