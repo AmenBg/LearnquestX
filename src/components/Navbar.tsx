@@ -13,7 +13,6 @@ export default function Navbar() {
   const links = [
     { to: '/', label: t('nav.home', language), icon: Home },
     { to: '/dashboard', label: t('nav.dashboard', language), icon: Zap },
-    { to: '/subjects', label: t('nav.subjects', language), icon: BookOpen },
     { to: '/store', label: 'Games', icon: Gamepad2 },
     { to: '/leaderboard', label: t('nav.leaderboard', language), icon: Trophy },
   ];

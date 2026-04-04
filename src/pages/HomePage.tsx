@@ -51,10 +51,10 @@ export default function HomePage() {
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <Link
-                to="/subjects"
+                to="/leaderboard"
                 className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-8 py-4 text-base font-semibold text-foreground transition-all hover:border-primary/30"
               >
-                {t('home.cta2', language)}
+                🏆 Leaderboard
               </Link>
             </div>
           </motion.div>

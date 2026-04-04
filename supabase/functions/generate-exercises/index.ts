@@ -74,7 +74,12 @@ Rules:
 - All text must be in ${langNames[language] || 'English'}
 - Each question must have exactly 4 options
 - Questions should be unique and varied
-- Follow the curriculum standards of ${country}`;
+- Follow the curriculum standards of ${country}
+- CRITICAL: The "correct" field must be the 0-based index of the correct answer in the "options" array
+- CRITICAL: Double-check that options[correct] is actually the right answer. For math: compute the result and verify it matches
+- CRITICAL: Every question must have exactly ONE correct answer. The correct answer MUST be verifiably true
+- Example: If the question is "What is 2 × 5?", the options might be ["8","10","12","15"], and correct must be 1 (because options[1] = "10")
+- Never generate a question where the correct answer is missing from the options`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
