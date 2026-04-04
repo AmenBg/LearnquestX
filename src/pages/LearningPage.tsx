@@ -50,10 +50,16 @@ export default function LearningPage() {
       });
 
       if (error) throw error;
-      if (data?.questions) {
-        setQuestions(data.questions);
+      if (data?.questions && Array.isArray(data.questions)) {
+        // Client-side validation: ensure correct index is valid
+        const validated = data.questions.filter((q: GeneratedQuestion) =>
+          q.options?.length === 4 &&
+          typeof q.correct === 'number' &&
+          q.correct >= 0 && q.correct <= 3 &&
+          q.options[q.correct]?.trim() !== ''
+        );
+        setQuestions(validated.length > 0 ? validated : getFallbackQuestions(subject?.name || 'Math'));
       } else {
-        // Fallback questions
         setQuestions(getFallbackQuestions(subject?.name || 'Math'));
       }
     } catch (err) {
@@ -84,14 +90,15 @@ export default function LearningPage() {
         await addXp(xpEarned);
 
         // Save to exercise history
-        for (const q of questions) {
+        for (let i = 0; i < questions.length; i++) {
+          const q = questions[i];
           await supabase.from('exercise_history').insert({
             user_id: authUser.id,
             subject_id: subjectId || 'unknown',
             lesson_id: `lesson_${Date.now()}`,
             question_hash: btoa(q.question).slice(0, 32),
-            was_correct: true,
-            xp_earned: 25,
+            was_correct: i < score, // only first `score` questions were correct
+            xp_earned: i < score ? 25 : 0,
           });
         }
       }

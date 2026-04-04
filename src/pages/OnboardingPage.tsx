@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { t, languages, Language } from '@/lib/i18n';
-import { countries, getCountry } from '@/lib/countries';
 import { motion } from 'framer-motion';
 import { Zap, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
@@ -12,14 +11,7 @@ export default function OnboardingPage() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [lang, setLang] = useState<Language>('en');
-  const [countryCode, setCountryCode] = useState('');
-  const [educationLevel, setEducationLevel] = useState('');
-  const [grade, setGrade] = useState('');
-  const [term, setTerm] = useState('');
   const [step, setStep] = useState(0);
-
-  const country = getCountry(countryCode);
-  const eduLevel = country?.educationLevels.find(e => e.id === educationLevel);
 
   const handleFinish = async () => {
     if (!authUser) {
@@ -30,10 +22,6 @@ export default function OnboardingPage() {
     await updateProfile({
       name: name || 'Player',
       preferred_language: lang,
-      country: countryCode,
-      education_level: educationLevel,
-      grade,
-      current_term: term,
     });
     setLanguage(lang);
     setIsOnboarded(true);
@@ -41,7 +29,7 @@ export default function OnboardingPage() {
     navigate('/dashboard');
   };
 
-  const totalSteps = 6;
+  const totalSteps = 2;
 
   const steps = [
     // Language
@@ -77,89 +65,11 @@ export default function OnboardingPage() {
         maxLength={50}
       />
       <button
-        onClick={() => setStep(2)}
-        className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-primary-foreground"
+        onClick={handleFinish}
+        className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-primary-foreground glow-primary"
       >
-        Next <ArrowRight className="h-4 w-4" />
+        Get Started 🚀
       </button>
-    </motion.div>,
-    // Country
-    <motion.div key="country" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-      <h2 className="mb-6 text-xl font-bold text-foreground">🌍 Select Your Country</h2>
-      <div className="grid gap-3 max-h-80 overflow-y-auto">
-        {countries.map(c => (
-          <button
-            key={c.code}
-            onClick={() => { setCountryCode(c.code); setEducationLevel(''); setGrade(''); setTerm(''); setStep(3); }}
-            className={`flex items-center gap-4 rounded-xl border p-4 text-left transition-all ${
-              countryCode === c.code ? 'border-primary bg-primary/10' : 'border-border bg-card hover:border-primary/30'
-            }`}
-          >
-            <span className="text-2xl">{c.flag}</span>
-            <p className="font-semibold text-foreground">{c.name}</p>
-          </button>
-        ))}
-      </div>
-    </motion.div>,
-    // Education Level
-    <motion.div key="edu" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-      <h2 className="mb-6 text-xl font-bold text-foreground">🎓 Education Level</h2>
-      <div className="grid gap-3">
-        {country?.educationLevels.map(level => (
-          <button
-            key={level.id}
-            onClick={() => { setEducationLevel(level.id); setGrade(''); setStep(4); }}
-            className={`flex items-center gap-4 rounded-xl border p-4 text-left transition-all ${
-              educationLevel === level.id ? 'border-primary bg-primary/10' : 'border-border bg-card hover:border-primary/30'
-            }`}
-          >
-            <span className="text-2xl">{level.id === 'primary' ? '📚' : level.id === 'middle' ? '🏫' : '🎓'}</span>
-            <p className="font-semibold text-foreground">{level.name}</p>
-          </button>
-        ))}
-      </div>
-    </motion.div>,
-    // Grade
-    <motion.div key="grade" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-      <h2 className="mb-6 text-xl font-bold text-foreground">📖 Select Your Grade</h2>
-      <div className="grid gap-3 max-h-80 overflow-y-auto">
-        {eduLevel?.grades.map(g => (
-          <button
-            key={g.id}
-            onClick={() => { setGrade(g.id); setStep(5); }}
-            className={`flex items-center gap-4 rounded-xl border p-4 text-left transition-all ${
-              grade === g.id ? 'border-primary bg-primary/10' : 'border-border bg-card hover:border-primary/30'
-            }`}
-          >
-            <p className="font-semibold text-foreground">{g.name}</p>
-          </button>
-        ))}
-      </div>
-    </motion.div>,
-    // Term
-    <motion.div key="term" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-      <h2 className="mb-6 text-xl font-bold text-foreground">📅 Current Term</h2>
-      <div className="grid gap-3">
-        {country?.terms.map(t => (
-          <button
-            key={t.id}
-            onClick={() => { setTerm(t.id); }}
-            className={`flex items-center gap-4 rounded-xl border p-4 text-left transition-all ${
-              term === t.id ? 'border-primary bg-primary/10' : 'border-border bg-card hover:border-primary/30'
-            }`}
-          >
-            <p className="font-semibold text-foreground">{t.name}</p>
-          </button>
-        ))}
-      </div>
-      {term && (
-        <button
-          onClick={handleFinish}
-          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-primary-foreground glow-primary"
-        >
-          {t('onboarding.start', lang)} 🚀
-        </button>
-      )}
     </motion.div>,
   ];
 
