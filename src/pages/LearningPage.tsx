@@ -50,10 +50,16 @@ export default function LearningPage() {
       });
 
       if (error) throw error;
-      if (data?.questions) {
-        setQuestions(data.questions);
+      if (data?.questions && Array.isArray(data.questions)) {
+        // Client-side validation: ensure correct index is valid
+        const validated = data.questions.filter((q: GeneratedQuestion) =>
+          q.options?.length === 4 &&
+          typeof q.correct === 'number' &&
+          q.correct >= 0 && q.correct <= 3 &&
+          q.options[q.correct]?.trim() !== ''
+        );
+        setQuestions(validated.length > 0 ? validated : getFallbackQuestions(subject?.name || 'Math'));
       } else {
-        // Fallback questions
         setQuestions(getFallbackQuestions(subject?.name || 'Math'));
       }
     } catch (err) {
