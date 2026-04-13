@@ -10,7 +10,6 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    // Authenticate the user
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Missing authorization" }), {
@@ -35,7 +34,6 @@ serve(async (req) => {
 
     const body = await req.json();
 
-    // Input validation
     const subject = typeof body.subject === "string" ? body.subject.slice(0, 100) : "";
     const country = typeof body.country === "string" ? body.country.slice(0, 50) : "";
     const educationLevel = typeof body.educationLevel === "string" ? body.educationLevel.slice(0, 50) : "";
@@ -44,8 +42,8 @@ serve(async (req) => {
     const language = typeof body.language === "string" ? body.language.slice(0, 5) : "en";
     const count = typeof body.count === "number" && body.count >= 1 && body.count <= 20 ? body.count : 5;
 
-    if (!subject || !country || !grade) {
-      return new Response(JSON.stringify({ error: "Missing required fields: subject, country, grade" }), {
+    if (!subject) {
+      return new Response(JSON.stringify({ error: "Missing required field: subject" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -58,28 +56,37 @@ serve(async (req) => {
       en: 'English', ar: 'Arabic', fr: 'French', es: 'Spanish', de: 'German'
     };
 
+    const difficultyInstructions = count === 5
+      ? `- Question 1: Easy difficulty
+- Question 2: Medium difficulty
+- Question 3: Medium+ difficulty
+- Question 4: Hard difficulty
+- Question 5: Very Hard difficulty`
+      : `- Difficulty should progress: first questions easy, last questions challenging`;
+
     const systemPrompt = `You are an expert educational content generator. Generate exactly ${count} quiz questions for students.
 
 Context:
 - Subject: ${subject}
-- Country: ${country}
-- Education level: ${educationLevel}
-- Grade: ${grade}
-- Current term: ${term}
+- Country: ${country || 'International'}
+- Education level: ${educationLevel || 'middle school'}
+- Grade: ${grade || '7'}
+- Current term: ${term || 'general'}
 - Language: ${langNames[language] || 'English'}
 
 Rules:
 - Questions must be appropriate for the student's grade level
-- Difficulty should progress: first questions easy, last questions challenging
+${difficultyInstructions}
 - All text must be in ${langNames[language] || 'English'}
 - Each question must have exactly 4 options
 - Questions should be unique and varied
-- Follow the curriculum standards of ${country}
 - CRITICAL: The "correct" field must be the 0-based index of the correct answer in the "options" array
-- CRITICAL: Double-check that options[correct] is actually the right answer. For math: compute the result and verify it matches
-- CRITICAL: Every question must have exactly ONE correct answer. The correct answer MUST be verifiably true
-- Example: If the question is "What is 2 × 5?", the options might be ["8","10","12","15"], and correct must be 1 (because options[1] = "10")
-- Never generate a question where the correct answer is missing from the options`;
+- CRITICAL: Double-check that options[correct] is actually the right answer
+- For math questions: compute the result FIRST, then set the correct index to match
+- Example: If the question is "What is 2 × 5?", options might be ["8","10","12","15"], correct must be 1 (because options[1] = "10")
+- CRITICAL: Every question must have exactly ONE correct answer that is VERIFIABLY TRUE
+- Never generate a question where the correct answer is missing from the options
+- For science/history/geography: ensure facts are accurate and well-established`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -88,10 +95,10 @@ Rules:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Generate ${count} quiz questions for ${subject} grade ${grade}.` },
+          { role: "user", content: `Generate ${count} quiz questions for ${subject} (grade ${grade || '7'}).` },
         ],
         tools: [
           {
@@ -153,13 +160,11 @@ Rules:
     if (toolCall?.function?.arguments) {
       const parsed = JSON.parse(toolCall.function.arguments);
       
-      // Validate every question before returning
       if (parsed.questions && Array.isArray(parsed.questions)) {
         const validated = parsed.questions.filter((q: any) => {
           if (!q.question || !Array.isArray(q.options) || q.options.length !== 4) return false;
           if (typeof q.correct !== 'number' || q.correct < 0 || q.correct > 3) return false;
           if (!q.explanation) return false;
-          // Ensure correct index points to a non-empty option
           if (!q.options[q.correct] || q.options[q.correct].trim() === '') return false;
           return true;
         });

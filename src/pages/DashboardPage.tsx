@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar';
 import StatCard from '@/components/StatCard';
 
 import { motion } from 'framer-motion';
-import { Zap, Flame, Star, ArrowRight, Gamepad2, BookOpen, Award } from 'lucide-react';
+import { Zap, Flame, Star, ArrowRight, Gamepad2, BookOpen, Award, Shuffle } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 
 export default function DashboardPage() {
@@ -46,25 +46,29 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
-        {/* Main Cards — Exercises, Games, Achievements */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-3">
-          <Link to={`/learn/${subjects[0]?.id || 'math'}`} className="group rounded-xl border border-primary/20 bg-primary/5 p-6 transition-all hover:border-primary/40 hover:scale-[1.02]">
-            <BookOpen className="h-10 w-10 text-primary mb-3" />
+        {/* Main Cards */}
+        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Link to="/learn/random" className="group rounded-xl border border-primary/20 bg-primary/5 p-6 transition-all hover:border-primary/40 hover:scale-[1.02]">
+            <Shuffle className="h-10 w-10 text-primary mb-3" />
             <h3 className="text-lg font-bold text-foreground">Start Learning</h3>
-            <p className="text-sm text-muted-foreground">Practice exercises & earn XP</p>
+            <p className="text-sm text-muted-foreground">Random subject exercises</p>
+          </Link>
+          <Link to="/subjects" className="group rounded-xl border border-accent/20 bg-accent/5 p-6 transition-all hover:border-accent/40 hover:scale-[1.02]">
+            <BookOpen className="h-10 w-10 text-accent mb-3" />
+            <h3 className="text-lg font-bold text-foreground">Subjects</h3>
+            <p className="text-sm text-muted-foreground">Choose a specific subject</p>
           </Link>
           <Link to="/store" className="group rounded-xl border border-secondary/20 bg-secondary/5 p-6 transition-all hover:border-secondary/40 hover:scale-[1.02]">
             <Gamepad2 className="h-10 w-10 text-secondary mb-3" />
             <h3 className="text-lg font-bold text-foreground">Games</h3>
-            <p className="text-sm text-muted-foreground">Play fun mini-games as rewards</p>
+            <p className="text-sm text-muted-foreground">Play fun mini-games</p>
           </Link>
-          <Link to="/achievements" className="group rounded-xl border border-accent/20 bg-accent/5 p-6 transition-all hover:border-accent/40 hover:scale-[1.02]">
-            <Award className="h-10 w-10 text-accent mb-3" />
+          <Link to="/achievements" className="group rounded-xl border border-streak/20 bg-streak/5 p-6 transition-all hover:border-streak/40 hover:scale-[1.02]">
+            <Award className="h-10 w-10 text-streak mb-3" />
             <h3 className="text-lg font-bold text-foreground">Achievements</h3>
-            <p className="text-sm text-muted-foreground">Track your progress & earn badges</p>
+            <p className="text-sm text-muted-foreground">Track progress & badges</p>
           </Link>
         </div>
-
       </div>
     </div>
   );

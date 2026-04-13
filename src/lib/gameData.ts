@@ -25,14 +25,16 @@ export interface LeaderboardEntry {
 }
 
 export const subjects: Subject[] = [
-  { id: 'math', name: 'Mathematics', icon: '🧮', color: 'hsl(130 100% 55%)', totalLevels: 200, completedLevels: 24, description: 'Numbers, algebra, geometry and more' },
-  { id: 'physics', name: 'Physics', icon: '⚡', color: 'hsl(220 90% 56%)', totalLevels: 200, completedLevels: 12, description: 'Forces, energy, waves and matter' },
-  { id: 'science', name: 'Science', icon: '🔬', color: 'hsl(270 80% 60%)', totalLevels: 200, completedLevels: 18, description: 'Biology, chemistry and earth science' },
-  { id: 'arabic', name: 'Arabic', icon: '🕌', color: 'hsl(35 100% 55%)', totalLevels: 200, completedLevels: 30, description: 'Reading, writing and grammar' },
-  { id: 'french', name: 'French', icon: '🗼', color: 'hsl(350 80% 55%)', totalLevels: 200, completedLevels: 8, description: 'Vocabulary, grammar and conversation' },
-  { id: 'english', name: 'English', icon: '📖', color: 'hsl(200 80% 55%)', totalLevels: 200, completedLevels: 45, description: 'Reading, writing and literature' },
-  { id: 'history', name: 'History', icon: '🏛️', color: 'hsl(45 80% 50%)', totalLevels: 200, completedLevels: 15, description: 'Ancient civilizations to modern era' },
-  { id: 'geography', name: 'Geography', icon: '🌍', color: 'hsl(160 70% 45%)', totalLevels: 200, completedLevels: 10, description: 'Countries, climates and cultures' },
+  { id: 'math', name: 'Mathematics', icon: '🧮', color: 'hsl(130 100% 55%)', totalLevels: 200, completedLevels: 0, description: 'Numbers, algebra, geometry and more' },
+  { id: 'physics', name: 'Physics', icon: '⚡', color: 'hsl(220 90% 56%)', totalLevels: 200, completedLevels: 0, description: 'Forces, energy, waves and matter' },
+  { id: 'science', name: 'Science', icon: '🔬', color: 'hsl(270 80% 60%)', totalLevels: 200, completedLevels: 0, description: 'Biology, chemistry and earth science' },
+  { id: 'arabic', name: 'Arabic', icon: '🕌', color: 'hsl(35 100% 55%)', totalLevels: 200, completedLevels: 0, description: 'Reading, writing and grammar' },
+  { id: 'english', name: 'English', icon: '📖', color: 'hsl(200 80% 55%)', totalLevels: 200, completedLevels: 0, description: 'Reading, writing and literature' },
+  { id: 'french', name: 'French', icon: '🗼', color: 'hsl(350 80% 55%)', totalLevels: 200, completedLevels: 0, description: 'Vocabulary, grammar and conversation' },
+  { id: 'philosophy', name: 'Philosophy', icon: '🤔', color: 'hsl(280 70% 55%)', totalLevels: 200, completedLevels: 0, description: 'Critical thinking and reasoning' },
+  { id: 'history', name: 'History', icon: '🏛️', color: 'hsl(45 80% 50%)', totalLevels: 200, completedLevels: 0, description: 'Ancient civilizations to modern era' },
+  { id: 'geography', name: 'Geography', icon: '🌍', color: 'hsl(160 70% 45%)', totalLevels: 200, completedLevels: 0, description: 'Countries, climates and cultures' },
+  { id: 'computer_science', name: 'Computer Science', icon: '💻', color: 'hsl(190 80% 50%)', totalLevels: 200, completedLevels: 0, description: 'Programming, algorithms and logic' },
 ];
 
 export const achievements: Achievement[] = [
