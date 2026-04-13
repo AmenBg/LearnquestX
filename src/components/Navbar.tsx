@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
-import { Zap, Home, BookOpen, Trophy, Menu, X, Gamepad2, Settings, LogIn } from 'lucide-react';
+import { Zap, Home, BookOpen, Trophy, Menu, X, Gamepad2, Settings, LogIn, Award, GraduationCap } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -13,8 +13,11 @@ export default function Navbar() {
   const links = [
     { to: '/', label: t('nav.home', language), icon: Home },
     { to: '/dashboard', label: t('nav.dashboard', language), icon: Zap },
+    { to: '/learn/random', label: 'Start Learning', icon: GraduationCap },
+    { to: '/subjects', label: t('nav.subjects', language), icon: BookOpen },
     { to: '/store', label: 'Games', icon: Gamepad2 },
     { to: '/leaderboard', label: t('nav.leaderboard', language), icon: Trophy },
+    { to: '/achievements', label: 'Achievements', icon: Award },
   ];
 
   return (
@@ -29,7 +32,7 @@ export default function Navbar() {
 
         <div className="hidden md:flex items-center gap-1">
           {links.map(link => {
-            const active = location.pathname === link.to;
+            const active = location.pathname === link.to || (link.to === '/learn/random' && location.pathname.startsWith('/learn/'));
             return (
               <Link key={link.to} to={link.to}
                 className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${

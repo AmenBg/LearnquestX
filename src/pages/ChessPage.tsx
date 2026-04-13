@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Chess, Square } from 'chess.js';
 import { chessPersonalities, ChessPersonality } from '@/lib/chessPersonalities';
@@ -26,7 +26,7 @@ function evaluateBoard(chess: Chess): number {
     for (const sq of row) {
       if (sq) {
         const val = values[sq.type] || 0;
-        score += sq.color === 'w' ? -val : val; // AI plays black
+        score += sq.color === 'w' ? -val : val;
       }
     }
   }
@@ -63,13 +63,11 @@ function getAIMove(chess: Chess, personality: ChessPersonality): string | null {
   const moves = chess.moves();
   if (moves.length === 0) return null;
 
-  // Random move based on personality randomness
   if (Math.random() < personality.randomness) {
     return moves[Math.floor(Math.random() * moves.length)];
   }
 
-  // Use minimax with limited depth
-  const depth = Math.min(personality.depth, 4); // Cap at 4 for performance
+  const depth = Math.min(personality.depth, 4); // Cap at 4 for browser performance
   let bestMove = moves[0];
   let bestScore = -Infinity;
 
@@ -93,6 +91,7 @@ function ChessBoard({ chess, onMove, playerColor, disabled }: {
   const [legalMoves, setLegalMoves] = useState<string[]>([]);
   const board = chess.board();
   const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+  const lastMove = chess.history({ verbose: true }).slice(-1)[0];
 
   const handleSquareClick = (square: string) => {
     if (disabled) return;
@@ -127,7 +126,7 @@ function ChessBoard({ chess, onMove, playerColor, disabled }: {
             const isDark = (ri + ci) % 2 === 1;
             const isSelected = square === selectedSquare;
             const isLegal = legalMoves.includes(square);
-            const isLastMove = chess.history({ verbose: true }).slice(-1)[0]?.from === square || chess.history({ verbose: true }).slice(-1)[0]?.to === square;
+            const isLastMove = lastMove?.from === square || lastMove?.to === square;
 
             return (
               <button
@@ -140,7 +139,7 @@ function ChessBoard({ chess, onMove, playerColor, disabled }: {
                 `}
               >
                 {isLegal && (
-                  <div className={`absolute inset-0 flex items-center justify-center ${piece ? '' : ''}`}>
+                  <div className="absolute inset-0 flex items-center justify-center">
                     <div className={`rounded-full ${piece ? 'h-full w-full border-4 border-primary/40' : 'h-3 w-3 bg-primary/30'}`} />
                   </div>
                 )}
@@ -162,13 +161,13 @@ function ChessBoard({ chess, onMove, playerColor, disabled }: {
 /* ─── PERSONALITY SELECTION ─── */
 function PersonalitySelector({ onSelect }: { onSelect: (p: ChessPersonality) => void }) {
   const [filter, setFilter] = useState<string>('all');
-  const levels = ['Beginner', 'Casual', 'Intermediate', 'Advanced', 'Expert'];
+  const levels = ['Beginner', 'Casual', 'Player', 'Advanced', 'Master'];
   const levelColors: Record<string, string> = {
     Beginner: 'bg-green-500/10 text-green-600 border-green-500/30',
     Casual: 'bg-blue-500/10 text-blue-600 border-blue-500/30',
-    Intermediate: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30',
+    Player: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30',
     Advanced: 'bg-orange-500/10 text-orange-600 border-orange-500/30',
-    Expert: 'bg-red-500/10 text-red-600 border-red-500/30',
+    Master: 'bg-red-500/10 text-red-600 border-red-500/30',
   };
 
   const filtered = filter === 'all' ? chessPersonalities : chessPersonalities.filter(p => p.level === filter);
@@ -176,7 +175,7 @@ function PersonalitySelector({ onSelect }: { onSelect: (p: ChessPersonality) => 
   return (
     <div>
       <div className="mb-6 flex flex-wrap gap-2">
-        <button onClick={() => setFilter('all')} className={`rounded-full px-3 py-1 text-xs font-semibold border transition-all ${filter === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground'}`}>All (50)</button>
+        <button onClick={() => setFilter('all')} className={`rounded-full px-3 py-1 text-xs font-semibold border transition-all ${filter === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground'}`}>All ({chessPersonalities.length})</button>
         {levels.map(l => (
           <button key={l} onClick={() => setFilter(l)} className={`rounded-full px-3 py-1 text-xs font-semibold border transition-all ${filter === l ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground'}`}>{l}</button>
         ))}
@@ -197,6 +196,7 @@ function PersonalitySelector({ onSelect }: { onSelect: (p: ChessPersonality) => 
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-foreground text-sm truncate">{p.name}</p>
               <p className="text-xs text-muted-foreground">{p.description}</p>
+              <p className="text-xs text-primary font-medium">+{p.xpReward} XP</p>
             </div>
             <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${levelColors[p.level]}`}>{p.level}</span>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -215,60 +215,73 @@ export default function ChessPage() {
   const [chess, setChess] = useState<Chess | null>(null);
   const [gameState, setGameState] = useState<'selecting' | 'playing' | 'finished'>('selecting');
   const [result, setResult] = useState<string>('');
+  const [xpEarned, setXpEarned] = useState(0);
   const [isAIThinking, setIsAIThinking] = useState(false);
+  const aiTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const startGame = (personality: ChessPersonality) => {
+    // Clear any pending AI timeout
+    if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
     setSelectedPersonality(personality);
     const c = new Chess();
     setChess(c);
     setGameState('playing');
     setResult('');
+    setXpEarned(0);
+    setIsAIThinking(false);
   };
 
-  const checkGameEnd = useCallback((c: Chess) => {
+  const checkGameEnd = useCallback((c: Chess, personality: ChessPersonality) => {
     if (c.isCheckmate()) {
       const winner = c.turn() === 'w' ? 'AI' : 'You';
       setResult(winner === 'You' ? '🏆 You win!' : '😔 AI wins!');
       setGameState('finished');
-      if (winner === 'You' && selectedPersonality) {
-        const xp = Math.min(10, Math.ceil(selectedPersonality.id / 5));
-        addXp(xp);
+      if (winner === 'You') {
+        const reward = personality.xpReward;
+        setXpEarned(reward);
+        addXp(reward);
       }
       return true;
     }
     if (c.isDraw() || c.isStalemate() || c.isThreefoldRepetition() || c.isInsufficientMaterial()) {
       setResult('🤝 Draw!');
       setGameState('finished');
-      if (selectedPersonality) addXp(3);
+      const reward = Math.floor(personality.xpReward * 0.3);
+      setXpEarned(reward);
+      if (reward > 0) addXp(reward);
       return true;
     }
     return false;
-  }, [selectedPersonality, addXp]);
+  }, [addXp]);
 
   const handlePlayerMove = useCallback((from: string, to: string) => {
     if (!chess || !selectedPersonality || isAIThinking) return;
-    const c = new Chess(chess.fen());
 
     try {
-      // Try promotion
+      const c = new Chess(chess.fen());
       const move = c.move({ from: from as Square, to: to as Square, promotion: 'q' });
       if (!move) return;
-    } catch { return; }
 
-    setChess(new Chess(c.fen()));
-    if (checkGameEnd(c)) return;
+      setChess(new Chess(c.fen()));
+      if (checkGameEnd(c, selectedPersonality)) return;
 
-    // AI move
-    setIsAIThinking(true);
-    setTimeout(() => {
-      const aiMoveStr = getAIMove(c, selectedPersonality);
-      if (aiMoveStr) {
-        c.move(aiMoveStr);
-        setChess(new Chess(c.fen()));
-        checkGameEnd(c);
-      }
-      setIsAIThinking(false);
-    }, 300 + Math.random() * 500);
+      setIsAIThinking(true);
+      aiTimeoutRef.current = setTimeout(() => {
+        try {
+          const aiMoveStr = getAIMove(c, selectedPersonality);
+          if (aiMoveStr) {
+            c.move(aiMoveStr);
+            setChess(new Chess(c.fen()));
+            checkGameEnd(c, selectedPersonality);
+          }
+        } catch (e) {
+          console.error('AI move error:', e);
+        }
+        setIsAIThinking(false);
+      }, 300 + Math.random() * 400);
+    } catch {
+      // Invalid move, ignore
+    }
   }, [chess, selectedPersonality, isAIThinking, checkGameEnd]);
 
   return (
@@ -276,13 +289,13 @@ export default function ChessPage() {
       <Navbar />
       <div className="container mx-auto max-w-2xl px-4 pt-24 pb-12">
         <button onClick={() => navigate('/store')} className="mb-6 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Back to Store
+          <ArrowLeft className="h-4 w-4" /> Back to Games
         </button>
 
         <div className="mb-6 text-center">
           <span className="text-4xl">♟️</span>
           <h1 className="mt-2 text-2xl font-bold text-foreground">Chess Arena</h1>
-          <p className="text-sm text-muted-foreground">Play against 50 unique AI opponents</p>
+          <p className="text-sm text-muted-foreground">25 unique AI opponents across 5 difficulty levels</p>
         </div>
 
         {gameState === 'selecting' && (
@@ -294,7 +307,7 @@ export default function ChessPage() {
             <div className="mb-4 flex items-center justify-between rounded-xl border border-border bg-card p-3">
               <div>
                 <p className="font-semibold text-foreground text-sm">vs. {selectedPersonality.name}</p>
-                <p className="text-xs text-muted-foreground">{selectedPersonality.level} • {selectedPersonality.style}</p>
+                <p className="text-xs text-muted-foreground">{selectedPersonality.level} • {selectedPersonality.style} • +{selectedPersonality.xpReward} XP</p>
               </div>
               <div className="text-right text-xs text-muted-foreground">
                 {chess.isCheck() && <span className="text-destructive font-bold">Check!</span>}
@@ -303,7 +316,7 @@ export default function ChessPage() {
             </div>
             <ChessBoard chess={chess} onMove={handlePlayerMove} playerColor="w" disabled={isAIThinking || gameState !== 'playing'} />
             <div className="mt-4 flex justify-center">
-              <button onClick={() => { setGameState('selecting'); setChess(null); }} className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground">Resign</button>
+              <button onClick={() => { if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current); setGameState('selecting'); setChess(null); setIsAIThinking(false); }} className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground">Resign</button>
             </div>
           </div>
         )}
@@ -312,7 +325,10 @@ export default function ChessPage() {
           <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
             <Trophy className="mx-auto mb-4 h-16 w-16 text-primary" />
             <h2 className="mb-2 text-2xl font-bold text-foreground">{result}</h2>
-            {selectedPersonality && <p className="mb-2 text-sm text-muted-foreground">vs. {selectedPersonality.name}</p>}
+            {selectedPersonality && <p className="mb-1 text-sm text-muted-foreground">vs. {selectedPersonality.name}</p>}
+            {xpEarned > 0 && (
+              <p className="text-sm font-semibold text-primary">+{xpEarned} XP earned!</p>
+            )}
             <div className="mt-6 flex gap-3 justify-center">
               <button onClick={() => selectedPersonality && startGame(selectedPersonality)} className="flex items-center gap-2 rounded-xl border border-border bg-card px-6 py-3 font-semibold text-foreground">
                 <RotateCcw className="h-4 w-4" /> Rematch
