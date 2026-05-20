@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
+import { useTheme, isThemeUnlocked } from '@/contexts/ThemeContext';
 import { languages, Language } from '@/lib/i18n';
 import { countries } from '@/lib/countries';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
-import { Settings, Globe, LogOut, User } from 'lucide-react';
+import { Settings, Globe, LogOut, User, Palette, Lock, Check, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
   const { profile, updateProfile, signOut, language, setLanguage } = useApp();
+  const { themeId, setThemeId, themes } = useTheme();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
+  const userXp = profile?.xp ?? 0;
 
   const handleLanguageChange = async (lang: Language) => {
     setSaving(true);
