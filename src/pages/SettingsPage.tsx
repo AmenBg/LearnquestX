@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
+import { useTheme, isThemeUnlocked } from '@/contexts/ThemeContext';
 import { languages, Language } from '@/lib/i18n';
 import { countries } from '@/lib/countries';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
-import { Settings, Globe, LogOut, User } from 'lucide-react';
+import { Settings, Globe, LogOut, User, Palette, Lock, Check, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
   const { profile, updateProfile, signOut, language, setLanguage } = useApp();
+  const { themeId, setThemeId, themes } = useTheme();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
+  const userXp = profile?.xp ?? 0;
 
   const handleLanguageChange = async (lang: Language) => {
     setSaving(true);
@@ -35,6 +38,67 @@ export default function SettingsPage() {
           <div className="mb-8 flex items-center gap-3">
             <Settings className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold text-foreground">Settings</h1>
+          </div>
+
+          {/* Theme picker */}
+          <div className="mb-6 rounded-xl border border-border bg-card p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Palette className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-bold text-foreground">Theme</h2>
+              </div>
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Zap className="h-3 w-3" /> {userXp.toLocaleString()} XP
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">Pick a theme — applied site-wide. Premium themes unlock with XP.</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {themes.map(theme => {
+                const unlocked = isThemeUnlocked(theme, userXp);
+                const active = themeId === theme.id;
+                return (
+                  <button
+                    key={theme.id}
+                    disabled={!unlocked}
+                    onClick={() => {
+                      setThemeId(theme.id);
+                      toast.success(`Theme: ${theme.name}`);
+                    }}
+                    className={`relative overflow-hidden rounded-xl border p-3 text-left transition-all ${
+                      active ? 'border-primary ring-2 ring-primary/30' :
+                      unlocked ? 'border-border hover:border-primary/40' :
+                      'border-border opacity-60 cursor-not-allowed'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-2xl">{theme.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-bold text-foreground truncate">{theme.name}</span>
+                          {active && <Check className="h-3.5 w-3.5 text-primary" />}
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">
+                          {theme.xpRequired > 0 ? `🔒 ${theme.xpRequired.toLocaleString()} XP` : 'Free'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 mb-2">
+                      {theme.swatch.map((c, i) => (
+                        <div key={i} className="h-5 flex-1 rounded" style={{ backgroundColor: c }} />
+                      ))}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground line-clamp-1">{theme.description}</p>
+                    {!unlocked && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-[1px]">
+                        <div className="flex items-center gap-2 rounded-full bg-card px-3 py-1.5 text-xs font-bold text-foreground border border-border">
+                          <Lock className="h-3 w-3" /> {(theme.xpRequired - userXp).toLocaleString()} XP to unlock
+                        </div>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Language */}
