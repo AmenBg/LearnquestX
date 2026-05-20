@@ -18,13 +18,8 @@ export default function LeaderboardPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchLeaderboard = async () => {
-    const { data } = await supabase
-      .from('leaderboard_view')
-      .select('name, xp, level, user_id')
-      .order('level', { ascending: false })
-      .order('xp', { ascending: false })
-      .limit(10);
-    if (data) setEntries(data.map(d => ({ name: d.name ?? 'Player', xp: d.xp ?? 0, level: d.level ?? 1, user_id: d.user_id ?? '' })));
+    const { data } = await supabase.rpc('get_leaderboard', { p_limit: 10 });
+    if (data) setEntries(data.map((d: any) => ({ name: d.name ?? 'Player', xp: d.xp ?? 0, level: d.level ?? 1, user_id: d.user_id ?? '' })));
     setLoading(false);
   };
 
