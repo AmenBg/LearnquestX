@@ -255,36 +255,19 @@ export type Database = {
       }
     }
     Views: {
-      leaderboard_view: {
-        Row: {
-          country: string | null
-          level: number | null
-          name: string | null
-          streak: number | null
-          user_id: string | null
-          xp: number | null
-        }
-        Insert: {
-          country?: string | null
-          level?: number | null
-          name?: string | null
-          streak?: number | null
-          user_id?: string | null
-          xp?: number | null
-        }
-        Update: {
-          country?: string | null
-          level?: number | null
-          name?: string | null
-          streak?: number | null
-          user_id?: string | null
-          xp?: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       add_xp_rpc: { Args: { amount: number }; Returns: undefined }
+      get_leaderboard: {
+        Args: { p_limit?: number }
+        Returns: {
+          level: number
+          name: string
+          user_id: string
+          xp: number
+        }[]
+      }
       purchase_game_rpc: {
         Args: { p_game_id: string; p_xp_cost: number }
         Returns: undefined
