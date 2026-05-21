@@ -11,6 +11,7 @@ import {
   XCircle, Lock, Trophy, Zap, Sparkles, Terminal, ListTree,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getLevelLabel } from '@/lib/codeLessons';
 
 interface Progress {
   completed: number[];          // lesson indices completed
@@ -38,7 +39,7 @@ function saveProgress(key: string, p: Progress) {
 
 export default function CodeLessonPage() {
   const { lang: langId, level: levelId } = useParams<{ lang: string; level: string }>();
-  const { authUser, authLoading, addXp } = useApp();
+  const { authUser, authLoading, addXp, language } = useApp();
 
   const lang = getLanguage(langId || '');
   const level = getLevel(levelId || '');
@@ -65,7 +66,7 @@ export default function CodeLessonPage() {
   // Reset per-lesson state when changing lesson
   useEffect(() => {
     if (!lesson) return;
-    setCode(lesson.starterCode);
+    setCode(''); // ✨ editor always starts COMPLETELY empty
     setRunOutput('');
     setRunError('');
     setHintsShown(0);
@@ -168,7 +169,7 @@ export default function CodeLessonPage() {
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span>{lang.name}</span>
                   <span>•</span>
-                  <span style={{ color: level.color }}>{level.sub}</span>
+                  <span style={{ color: level.color }} className="font-semibold">{getLevelLabel(level.id, language)}</span>
                   <span>•</span>
                   <span>{lesson.difficulty}</span>
                 </div>
@@ -361,8 +362,8 @@ export default function CodeLessonPage() {
               <button onClick={handleRun} className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:opacity-90 shadow-[0_0_20px_rgba(130,255,150,0.3)]">
                 <Play className="h-4 w-4" /> Run Code
               </button>
-              <button onClick={() => setCode(lesson.starterCode)} className="rounded-xl border border-border bg-card px-4 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground">
-                Reset
+              <button onClick={() => setCode('')} className="rounded-xl border border-border bg-card px-4 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground">
+                Clear
               </button>
               <span className="text-xs text-muted-foreground ml-auto flex items-center gap-1">
                 <Zap className="h-3 w-3" /> Attempts: {attemptCount}

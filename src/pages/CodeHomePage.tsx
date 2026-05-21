@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
-import { CODE_LANGUAGES } from '@/lib/codeLessons';
+import { CODE_LANGUAGES, LESSONS_PER_LEVEL } from '@/lib/codeLessons';
 import { Code2, ArrowLeft } from 'lucide-react';
 
 export default function CodeHomePage() {
+  const totalLessons = LESSONS_PER_LEVEL * 4;
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -19,7 +20,7 @@ export default function CodeHomePage() {
           </div>
           <h1 className="text-4xl font-bold text-foreground">{'<Code/>'} Academy</h1>
           <p className="text-muted-foreground mt-2 max-w-xl mx-auto">
-            Master 10 programming languages. Real IDE. Real challenges. Earn premium XP for every lesson.
+            Master 10 programming languages. {totalLessons.toLocaleString()} lessons per language across 4 levels. Real IDE. Real challenges.
           </p>
         </motion.div>
 
@@ -48,7 +49,7 @@ export default function CodeHomePage() {
                 <h3 className="text-lg font-bold text-foreground">{lang.name}</h3>
                 <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{lang.description}</p>
                 <div className="mt-4 flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">30 lessons</span>
+                  <span className="text-muted-foreground">{totalLessons.toLocaleString()} lessons</span>
                   <span className="font-semibold text-primary group-hover:translate-x-0.5 transition-transform">
                     Start →
                   </span>

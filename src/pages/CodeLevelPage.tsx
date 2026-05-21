@@ -1,13 +1,15 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
-import { CODE_LEVELS, getLanguage } from '@/lib/codeLessons';
+import { CODE_LEVELS, getLanguage, getLevelLabel, LESSONS_PER_LEVEL } from '@/lib/codeLessons';
 import { ArrowLeft, Zap } from 'lucide-react';
+import { useApp } from '@/contexts/AppContext';
 
 export default function CodeLevelPage() {
   const { lang: langId } = useParams<{ lang: string }>();
   const lang = getLanguage(langId || '');
   const navigate = useNavigate();
+  const { language } = useApp();
 
   if (!lang) {
     return (
@@ -18,8 +20,10 @@ export default function CodeLevelPage() {
     );
   }
 
+  const isRtl = language === 'ar';
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRtl ? 'rtl' : 'ltr'}>
       <Navbar />
       <div className="container mx-auto max-w-3xl px-4 pt-24 pb-12">
         <Link to="/code" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
@@ -34,7 +38,7 @@ export default function CodeLevelPage() {
             {lang.icon}
           </div>
           <h1 className="text-3xl font-bold text-foreground">{lang.name}</h1>
-          <p className="text-muted-foreground mt-2">Choose your starting level — lessons unlock progressively from there.</p>
+          <p className="text-muted-foreground mt-2">Choose your level — {LESSONS_PER_LEVEL}+ lessons each.</p>
         </motion.div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -59,12 +63,12 @@ export default function CodeLevelPage() {
                   <Zap className="h-3 w-3" /> ×{lvl.xpMultiplier.toFixed(2)}
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-1" dir={lvl.id === 'beginner' || lvl.id === 'intermediate' || lvl.id === 'expert' ? 'auto' : 'ltr'}>
-                {lvl.label}
+              <h3 className="text-2xl font-bold text-foreground mb-1">
+                {getLevelLabel(lvl.id, language)}
               </h3>
               <p className="text-sm text-muted-foreground">{lvl.sub}</p>
               <p className="mt-3 text-xs text-muted-foreground">
-                Starts at lesson {lvl.startIndex + 1} • {30 - lvl.startIndex} lessons ahead
+                {lvl.count} lessons in this level
               </p>
             </motion.button>
           ))}
