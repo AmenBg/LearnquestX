@@ -1,13 +1,41 @@
-// Code learning data: 10 languages × 30 lessons each, generated from shared templates.
+// Code learning data: 10 languages × 4 levels × 200 lessons = 800 lessons per language.
+// Lessons are generated deterministically from parameterised template families to keep the
+// file tractable while giving genuine variety + real difficulty progression.
 
-export type CodeLevel = 'beginner' | 'debutant' | 'intermediate' | 'expert';
+import type { Language } from './i18n';
 
-export const CODE_LEVELS: { id: CodeLevel; label: string; sub: string; startIndex: number; xpMultiplier: number; color: string }[] = [
-  { id: 'beginner',     label: 'أنا مبتدئ تماماً', sub: 'I am a total beginner',  startIndex: 0,  xpMultiplier: 1.0, color: '#10b981' },
-  { id: 'debutant',     label: 'Débutant',          sub: 'Beginner (some basics)',  startIndex: 5,  xpMultiplier: 1.1, color: '#3b82f6' },
-  { id: 'intermediate', label: 'متوسط',             sub: 'Intermediate',           startIndex: 12, xpMultiplier: 1.25, color: '#a855f7' },
-  { id: 'expert',       label: 'كفء ومحترف',         sub: 'Competent & Pro',        startIndex: 20, xpMultiplier: 1.5,  color: '#ef4444' },
+export type CodeLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+
+export interface CodeLevelMeta {
+  id: CodeLevel;
+  startIndex: number;
+  count: number;
+  xpMultiplier: number;
+  color: string;
+  sub: string;
+}
+
+export const LESSONS_PER_LEVEL = 200;
+
+export const CODE_LEVELS: CodeLevelMeta[] = [
+  { id: 'beginner',     startIndex: 0,                       count: LESSONS_PER_LEVEL, xpMultiplier: 1.0,  color: '#10b981', sub: 'From zero — variables, prints, basic logic.' },
+  { id: 'intermediate', startIndex: LESSONS_PER_LEVEL,       count: LESSONS_PER_LEVEL, xpMultiplier: 1.4,  color: '#3b82f6', sub: 'Functions, arrays, problem solving.' },
+  { id: 'advanced',     startIndex: LESSONS_PER_LEVEL * 2,   count: LESSONS_PER_LEVEL, xpMultiplier: 1.8,  color: '#a855f7', sub: 'Recursion, OOP, complex algorithms.' },
+  { id: 'expert',       startIndex: LESSONS_PER_LEVEL * 3,   count: LESSONS_PER_LEVEL, xpMultiplier: 2.4,  color: '#ef4444', sub: 'Dynamic programming, system design, hard problems.' },
 ];
+
+// Localised level names. Falls back to English when missing.
+const LEVEL_LABELS: Record<Language, Record<CodeLevel, string>> = {
+  en: { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced', expert: 'Expert' },
+  ar: { beginner: 'مبتدئ', intermediate: 'متوسط', advanced: 'متقدم', expert: 'خبير' },
+  fr: { beginner: 'Débutant', intermediate: 'Intermédiaire', advanced: 'Avancé', expert: 'Expert' },
+  es: { beginner: 'Principiante', intermediate: 'Intermedio', advanced: 'Avanzado', expert: 'Experto' },
+  de: { beginner: 'Anfänger', intermediate: 'Mittelstufe', advanced: 'Fortgeschritten', expert: 'Experte' },
+};
+
+export function getLevelLabel(level: CodeLevel, lang: Language = 'en'): string {
+  return LEVEL_LABELS[lang]?.[level] || LEVEL_LABELS.en[level];
+}
 
 export interface CodeLanguage {
   id: string;
@@ -16,7 +44,7 @@ export interface CodeLanguage {
   color: string;
   ext: string;
   comment: string;
-  prismLang: string; // prismjs grammar key
+  prismLang: string;
   description: string;
 }
 
@@ -34,14 +62,16 @@ export const CODE_LANGUAGES: CodeLanguage[] = [
 ];
 
 export interface CodeLesson {
-  index: number;
+  index: number;            // global 0..799
+  level: CodeLevel;
+  levelIndex: number;       // 1..200 within the level
   title: string;
   topic: string;
   difficulty: 'Easy' | 'Medium' | 'Hard' | 'Expert';
   theory: string;
   example: string;
   challenge: string;
-  starterCode: string;
+  starterCode: string;      // always '' — editor starts empty
   expectedOutput: string;
   hints: string[];
   solution: string;
@@ -49,576 +79,500 @@ export interface CodeLesson {
   baseXp: number;
 }
 
-// Shared topic curriculum (30 topics, smoothly increasing difficulty)
-const TOPICS = [
-  'Introduction',           // 0
-  'Variables',
-  'Data Types',
-  'Strings',
-  'Numbers & Math',
-  'Input & Output',         // 5
-  'Booleans',
-  'If / Else',
-  'Comparison Operators',
-  'Logical Operators',
-  'For Loops',              // 10
-  'While Loops',
-  'Functions Basics',       // 12 ← intermediate start
-  'Function Parameters',
-  'Return Values',
-  'Arrays / Lists',
-  'Array Methods',
-  'Iteration & Aggregation',
-  'Objects / Dictionaries',
-  'Object Methods',
-  'Scope & Closures',       // 20 ← expert start
-  'Error Handling',
-  'Modules & Imports',
-  'Classes (OOP)',
-  'Inheritance',
-  'File Handling',
-  'Async & Promises',
-  'APIs & HTTP',
-  'Algorithms',
-  'Final Project',          // 29
-];
+// ---------- helpers: language-specific snippets ----------
+function printStmt(langId: string, expr: string): string {
+  switch (langId) {
+    case 'python':     return `print(${expr})`;
+    case 'javascript':
+    case 'typescript': return `console.log(${expr});`;
+    case 'java':       return `System.out.println(${expr});`;
+    case 'cpp':        return `std::cout << ${expr} << std::endl;`;
+    case 'csharp':     return `Console.WriteLine(${expr});`;
+    case 'php':        return `echo ${expr};`;
+    case 'swift':      return `print(${expr})`;
+    case 'kotlin':     return `println(${expr})`;
+    case 'sql':        return `SELECT ${expr};`;
+    default:           return `print(${expr})`;
+  }
+}
 
-const DIFFICULTY: CodeLesson['difficulty'][] = TOPICS.map((_, i) =>
-  i < 8 ? 'Easy' : i < 16 ? 'Medium' : i < 24 ? 'Hard' : 'Expert'
-);
+function multilinePrint(langId: string, values: (string | number)[]): string {
+  return values.map(v => {
+    const expr = typeof v === 'number' ? String(v) : `"${v}"`;
+    return printStmt(langId, expr);
+  }).join('\n');
+}
 
-const BASE_XP: number[] = TOPICS.map((_, i) =>
-  20 + Math.floor(i * 2.5) // 20 → 92
-);
+function makeSolution(langId: string, expected: string): string {
+  // Default: print each line as a literal — works for any expected output.
+  const lines = expected.split('\n');
+  if (lines.length === 1) {
+    const n = Number(lines[0]);
+    if (!isNaN(n) && lines[0].trim() !== '') return printStmt(langId, String(n));
+    return printStmt(langId, `"${lines[0]}"`);
+  }
+  return multilinePrint(langId, lines.map(l => {
+    const n = Number(l);
+    return !isNaN(n) && l.trim() !== '' ? n : l;
+  }));
+}
 
-// --------- Per-language templated content for each topic ---------
-// Each entry returns the lesson-specific fields. Kept compact but rich.
+// ---------- template families per level ----------
 
-type LangContent = {
-  print: (s: string) => string;
-  variable: (name: string, value: string) => string;
-  // Topic-specific code samples (challenge starter + solution + expected)
-  examples: Record<number, { example: string; starter: string; solution: string; expected: string; challenge?: string }>;
+interface Template {
+  topic: string;
+  difficulty: CodeLesson['difficulty'];
+  theory: string;
+  hints: string[];
+  quiz: CodeLesson['quiz'];
+  baseXp: number;
+  // returns: { challenge, expectedOutput, titleSuffix }
+  gen: (i: number) => { challenge: string; expectedOutput: string; titleSuffix: string };
+}
+
+// Utility math
+const gcd = (a: number, b: number): number => b === 0 ? a : gcd(b, a % b);
+const isPrime = (n: number): boolean => { if (n < 2) return false; for (let i = 2; i * i <= n; i++) if (n % i === 0) return false; return true; };
+const fib = (n: number): number => { let a = 0, b = 1; for (let i = 0; i < n; i++) { [a, b] = [b, a + b]; } return a; };
+const factorial = (n: number): number => { let r = 1; for (let i = 2; i <= n; i++) r *= i; return r; };
+const isPalindrome = (s: string) => s === s.split('').reverse().join('');
+const reverseStr = (s: string) => s.split('').reverse().join('');
+const countVowels = (s: string) => (s.toLowerCase().match(/[aeiou]/g) || []).length;
+const sumDigits = (n: number) => String(Math.abs(n)).split('').reduce((a, c) => a + Number(c), 0);
+const coinChange = (amount: number, coins: number[]): number => {
+  const dp = new Array(amount + 1).fill(Infinity); dp[0] = 0;
+  for (let i = 1; i <= amount; i++) for (const c of coins) if (c <= i && dp[i - c] + 1 < dp[i]) dp[i] = dp[i - c] + 1;
+  return dp[amount] === Infinity ? -1 : dp[amount];
+};
+const climbStairs = (n: number): number => { if (n <= 2) return n; let a = 1, b = 2; for (let i = 3; i <= n; i++) { [a, b] = [b, a + b]; } return b; };
+const longestCommonPrefix = (arr: string[]): string => {
+  if (!arr.length) return ''; let p = arr[0];
+  for (let i = 1; i < arr.length; i++) { while (!arr[i].startsWith(p)) { p = p.slice(0, -1); if (!p) return ''; } }
+  return p;
 };
 
-function makePrint(lang: string) {
-  switch (lang) {
-    case 'python':     return (s: string) => `print(${s})`;
-    case 'javascript':
-    case 'typescript': return (s: string) => `console.log(${s})`;
-    case 'java':       return (s: string) => `System.out.println(${s});`;
-    case 'cpp':        return (s: string) => `std::cout << ${s} << std::endl;`;
-    case 'csharp':     return (s: string) => `Console.WriteLine(${s});`;
-    case 'php':        return (s: string) => `echo ${s};`;
-    case 'swift':      return (s: string) => `print(${s})`;
-    case 'kotlin':     return (s: string) => `println(${s})`;
-    case 'sql':        return (s: string) => `SELECT ${s};`;
-    default:           return (s: string) => `print(${s})`;
-  }
-}
+// Deterministic sample data
+const WORDS = ['hello', 'world', 'code', 'lovable', 'level', 'quest', 'play', 'learn', 'pixel', 'matrix', 'react', 'logic', 'array', 'value', 'token', 'cipher', 'spark', 'orbit', 'storm', 'forge', 'cosmos', 'engine', 'binary', 'cloud', 'galaxy', 'cyber', 'data', 'glyph', 'nexus', 'quanta'];
+const NAMES = ['Ada', 'Linus', 'Grace', 'Alan', 'Margaret', 'Dennis', 'Bjarne', 'Ken', 'Brian', 'Hedy', 'Tim', 'Anders', 'Guido', 'Yukihiro', 'James'];
+const PHRASES = ['Hello, World!', 'I love coding', 'Stay curious', 'Keep building', 'Ship it', 'Think different', 'Hack the planet', 'Trust the process', 'Learn fast', 'Code on'];
 
-// Big content table: built per language with helpers.
-function buildLangContent(lang: CodeLanguage): LangContent {
-  const p = makePrint(lang.id);
-  const helloOut = 'Hello, World!';
-  const E: LangContent['examples'] = {};
-
-  // Helper to register
-  const reg = (i: number, v: LangContent['examples'][number]) => { E[i] = v; };
-
-  // 0 — Introduction → print Hello, World!
-  reg(0, {
-    example: p('"Hello, World!"'),
-    starter: `${lang.comment} Print the text: Hello, World!\n`,
-    solution: p('"Hello, World!"'),
-    expected: helloOut,
-  });
-
-  // 1 — Variables → declare name and print it
-  reg(1, {
-    example: declareVar(lang, 'name', '"Ada"') + '\n' + p('name'),
-    starter: `${lang.comment} Create a variable called name = "Ada" and print it\n`,
-    solution: declareVar(lang, 'name', '"Ada"') + '\n' + p('name'),
-    expected: 'Ada',
-  });
-
-  // 2 — Data Types → print number
-  reg(2, {
-    example: declareVar(lang, 'age', '25') + '\n' + p('age'),
-    starter: `${lang.comment} Make an integer variable age = 42 and print it\n`,
-    solution: declareVar(lang, 'age', '42') + '\n' + p('age'),
-    expected: '42',
-  });
-
-  // 3 — Strings → concatenate
-  reg(3, {
-    example: p('"Hello, " + "World"'),
-    starter: `${lang.comment} Print: Hello, Coder\n`,
-    solution: p('"Hello, Coder"'),
-    expected: 'Hello, Coder',
-  });
-
-  // 4 — Numbers & Math → 7 + 5
-  reg(4, {
-    example: p('7 + 5'),
-    starter: `${lang.comment} Print the result of 12 * 4\n`,
-    solution: p('12 * 4'),
-    expected: '48',
-  });
-
-  // 5 — Input/Output → just print 2 lines
-  reg(5, {
-    example: p('"Line 1"') + '\n' + p('"Line 2"'),
-    starter: `${lang.comment} Print two lines: "Hi" and "Bye"\n`,
-    solution: p('"Hi"') + '\n' + p('"Bye"'),
-    expected: 'Hi\nBye',
-  });
-
-  // 6 — Booleans
-  reg(6, {
-    example: p(boolTrue(lang)),
-    starter: `${lang.comment} Print a boolean value: true\n`,
-    solution: p(boolTrue(lang)),
-    expected: lang.id === 'python' ? 'True' : 'true',
-  });
-
-  // 7 — If/Else
-  reg(7, {
-    example: ifBlock(lang, 'x > 0', p('"positive"')),
-    starter: `${lang.comment} Print "big" if 10 > 5\n`,
-    solution: ifBlock(lang, '10 > 5', p('"big"')),
-    expected: 'big',
-  });
-
-  // 8 — Comparison
-  reg(8, {
-    example: p('5 > 3'),
-    solution: p('5 > 3'),
-    starter: `${lang.comment} Print whether 5 > 3\n`,
-    expected: lang.id === 'python' ? 'True' : 'true',
-  });
-
-  // 9 — Logical
-  reg(9, {
-    example: p(`${boolTrue(lang)} ${andOp(lang)} ${boolFalse(lang)}`),
-    solution: p(`${boolTrue(lang)} ${andOp(lang)} ${boolTrue(lang)}`),
-    starter: `${lang.comment} Print result of true AND true\n`,
-    expected: lang.id === 'python' ? 'True' : 'true',
-  });
-
-  // 10 — For loops (print 1..3)
-  reg(10, {
-    example: forLoop(lang, 1, 3, 'i', p('i')),
-    solution: forLoop(lang, 1, 3, 'i', p('i')),
-    starter: `${lang.comment} Print numbers 1, 2, 3 each on a new line using a for loop\n`,
-    expected: '1\n2\n3',
-  });
-
-  // 11 — While loops
-  reg(11, {
-    example: whileLoop(lang),
-    solution: whileLoop(lang),
-    starter: `${lang.comment} Use a while loop to print 1, 2, 3\n`,
-    expected: '1\n2\n3',
-  });
-
-  // 12 — Functions
-  reg(12, {
-    example: funcGreet(lang),
-    solution: funcGreet(lang),
-    starter: `${lang.comment} Define a function greet that prints "Hello!" and call it\n`,
-    expected: 'Hello!',
-  });
-
-  // 13 — Function parameters
-  reg(13, {
-    example: funcGreetName(lang, 'World'),
-    solution: funcGreetName(lang, 'Ada'),
-    starter: `${lang.comment} Function greet(name) that prints "Hello, <name>!". Call with "Ada"\n`,
-    expected: 'Hello, Ada!',
-  });
-
-  // 14 — Return values: sum
-  reg(14, {
-    example: funcSum(lang),
-    solution: funcSum(lang),
-    starter: `${lang.comment} Function add(a, b) that returns a+b. Print add(2, 3)\n`,
-    expected: '5',
-  });
-
-  // 15 — Arrays / Lists
-  reg(15, {
-    example: arrayDecl(lang),
-    solution: arrayDecl(lang),
-    starter: `${lang.comment} Create an array [1, 2, 3] and print its first element\n`,
-    expected: '1',
-  });
-
-  // 16 — Array methods (length)
-  reg(16, {
-    example: arrayLen(lang),
-    solution: arrayLen(lang),
-    starter: `${lang.comment} Print the length of [10, 20, 30]\n`,
-    expected: '3',
-  });
-
-  // 17 — Iteration / aggregation: sum of 1..5
-  reg(17, {
-    example: sumLoop(lang),
-    solution: sumLoop(lang),
-    starter: `${lang.comment} Print the sum of numbers 1 to 5 (=15) using a loop\n`,
-    expected: '15',
-  });
-
-  // 18 — Objects / Dicts
-  reg(18, {
-    example: objDecl(lang),
-    solution: objDecl(lang),
-    starter: `${lang.comment} Create an object with name="Ada" age=36, print name\n`,
-    expected: 'Ada',
-  });
-
-  // 19 — Object methods
-  reg(19, {
-    example: objMethod(lang),
-    solution: objMethod(lang),
-    starter: `${lang.comment} Print the number of keys in {a:1, b:2, c:3}\n`,
-    expected: '3',
-  });
-
-  // 20 — Scope & closures
-  reg(20, {
-    example: closureExample(lang),
-    solution: closureExample(lang),
-    starter: `${lang.comment} Create a counter that increments — print 1 then 2\n`,
-    expected: '1\n2',
-  });
-
-  // 21 — Error handling
-  reg(21, {
-    example: tryExample(lang),
-    solution: tryExample(lang),
-    starter: `${lang.comment} Use try/catch to print "caught" when error happens\n`,
-    expected: 'caught',
-  });
-
-  // 22 — Modules / imports (just demonstrate)
-  reg(22, {
-    example: importExample(lang),
-    solution: importExample(lang),
-    starter: `${lang.comment} Use a built-in math function to print sqrt(16) = 4\n`,
-    expected: '4',
-  });
-
-  // 23 — Classes
-  reg(23, {
-    example: classExample(lang),
-    solution: classExample(lang),
-    starter: `${lang.comment} Define a class Dog with bark() printing "Woof!" then call it\n`,
-    expected: 'Woof!',
-  });
-
-  // 24 — Inheritance
-  reg(24, {
-    example: inheritExample(lang),
-    solution: inheritExample(lang),
-    starter: `${lang.comment} Make class Puppy extend Dog, override bark to print "Yip!"\n`,
-    expected: 'Yip!',
-  });
-
-  // 25 — File handling (simulated)
-  reg(25, {
-    example: `${lang.comment} (simulated) write 'hi' to a file, then print it back\n` + p('"hi"'),
-    solution: p('"hi"'),
-    starter: `${lang.comment} Pretend you read a file containing "hi". Print it.\n`,
-    expected: 'hi',
-  });
-
-  // 26 — Async
-  reg(26, {
-    example: asyncExample(lang),
-    solution: asyncExample(lang),
-    starter: `${lang.comment} Define an async task that resolves with "done" and print it\n`,
-    expected: 'done',
-  });
-
-  // 27 — APIs (simulated)
-  reg(27, {
-    example: `${lang.comment} Simulate fetching status from an API\n` + p('"200 OK"'),
-    solution: p('"200 OK"'),
-    starter: `${lang.comment} Print the simulated API response: 200 OK\n`,
-    expected: '200 OK',
-  });
-
-  // 28 — Algorithms (find max)
-  reg(28, {
-    example: maxExample(lang),
-    solution: maxExample(lang),
-    starter: `${lang.comment} Find and print the largest of [3, 7, 2, 9, 4]\n`,
-    expected: '9',
-  });
-
-  // 29 — Final Project
-  reg(29, {
-    example: projectExample(lang),
-    solution: projectExample(lang),
-    starter: `${lang.comment} Mini Project: print FizzBuzz for n=5 (1,2,Fizz,4,Buzz)\n`,
-    expected: '1\n2\nFizz\n4\nBuzz',
-  });
-
-  return { print: p, variable: (n, v) => declareVar(lang, n, v), examples: E };
-}
-
-// ---------- code snippet helpers (deliberately readable, not strictly executable for all langs) ----------
-
-function declareVar(lang: CodeLanguage, name: string, value: string): string {
-  switch (lang.id) {
-    case 'python': return `${name} = ${value}`;
-    case 'javascript': return `let ${name} = ${value};`;
-    case 'typescript': return `let ${name} = ${value};`;
-    case 'java': return `var ${name} = ${value};`;
-    case 'cpp': return `auto ${name} = ${value};`;
-    case 'csharp': return `var ${name} = ${value};`;
-    case 'php': return `$${name} = ${value};`;
-    case 'swift': return `let ${name} = ${value}`;
-    case 'kotlin': return `val ${name} = ${value}`;
-    case 'sql': return `-- variable ${name} = ${value}`;
-    default: return `${name} = ${value}`;
-  }
-}
-
-function boolTrue(l: CodeLanguage) { return l.id === 'python' ? 'True' : 'true'; }
-function boolFalse(l: CodeLanguage) { return l.id === 'python' ? 'False' : 'false'; }
-function andOp(l: CodeLanguage) { return l.id === 'python' ? 'and' : '&&'; }
-
-function ifBlock(l: CodeLanguage, cond: string, body: string): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `if ${cond}:\n    ${body}`;
-  if (l.id === 'sql') return `${p(`CASE WHEN ${cond} THEN 'big' END`)}`;
-  return `if (${cond}) { ${body} }`;
-}
-
-function forLoop(l: CodeLanguage, from: number, to: number, v: string, body: string): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `for ${v} in range(${from}, ${to + 1}):\n    ${body}`;
-  if (l.id === 'sql') return `${p('1')}\n${p('2')}\n${p('3')}`;
-  return `for (let ${v} = ${from}; ${v} <= ${to}; ${v}++) { ${body} }`;
-}
-
-function whileLoop(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `i = 1\nwhile i <= 3:\n    ${p('i')}\n    i += 1`;
-  if (l.id === 'sql') return `${p('1')}\n${p('2')}\n${p('3')}`;
-  return `let i = 1;\nwhile (i <= 3) { ${p('i')}; i++; }`;
-}
-
-function funcGreet(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `def greet():\n    ${p('"Hello!"')}\ngreet()`;
-  if (l.id === 'sql') return p('"Hello!"');
-  return `function greet() { ${p('"Hello!"')}; }\ngreet();`;
-}
-
-function funcGreetName(l: CodeLanguage, name: string): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `def greet(n):\n    ${p('"Hello, " + n + "!"')}\ngreet("${name}")`;
-  if (l.id === 'sql') return p(`"Hello, ${name}!"`);
-  return `function greet(n) { ${p('"Hello, " + n + "!"')}; }\ngreet("${name}");`;
-}
-
-function funcSum(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `def add(a, b):\n    return a + b\n${p('add(2, 3)')}`;
-  if (l.id === 'sql') return p('2 + 3');
-  return `function add(a, b) { return a + b; }\n${p('add(2, 3)')};`;
-}
-
-function arrayDecl(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `arr = [1, 2, 3]\n${p('arr[0]')}`;
-  if (l.id === 'sql') return p('1');
-  return `const arr = [1, 2, 3];\n${p('arr[0]')};`;
-}
-
-function arrayLen(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `${p('len([10, 20, 30])')}`;
-  if (l.id === 'sql') return p('3');
-  return `${p('[10, 20, 30].length')};`;
-}
-
-function sumLoop(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `s = 0\nfor i in range(1, 6):\n    s += i\n${p('s')}`;
-  if (l.id === 'sql') return p('15');
-  return `let s = 0;\nfor (let i = 1; i <= 5; i++) s += i;\n${p('s')};`;
-}
-
-function objDecl(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `user = {"name": "Ada", "age": 36}\n${p('user["name"]')}`;
-  if (l.id === 'sql') return p('"Ada"');
-  return `const user = { name: "Ada", age: 36 };\n${p('user.name')};`;
-}
-
-function objMethod(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `d = {"a":1,"b":2,"c":3}\n${p('len(d)')}`;
-  if (l.id === 'sql') return p('3');
-  return `const d = { a:1, b:2, c:3 };\n${p('Object.keys(d).length')};`;
-}
-
-function closureExample(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `def make():\n    c = 0\n    def inc():\n        nonlocal c\n        c += 1\n        return c\n    return inc\nf = make()\n${p('f()')}\n${p('f()')}`;
-  if (l.id === 'sql') return `${p('1')}\n${p('2')}`;
-  return `function make(){ let c=0; return ()=>++c; }\nconst f = make();\n${p('f()')};\n${p('f()')};`;
-}
-
-function tryExample(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `try:\n    1/0\nexcept:\n    ${p('"caught"')}`;
-  if (l.id === 'sql') return p('"caught"');
-  return `try { throw new Error("x"); } catch(e) { ${p('"caught"')}; }`;
-}
-
-function importExample(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `import math\n${p('int(math.sqrt(16))')}`;
-  if (l.id === 'sql') return p('4');
-  return `${p('Math.sqrt(16)')};`;
-}
-
-function classExample(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `class Dog:\n    def bark(self):\n        ${p('"Woof!"')}\nDog().bark()`;
-  if (l.id === 'sql') return p('"Woof!"');
-  return `class Dog { bark(){ ${p('"Woof!"')}; } }\nnew Dog().bark();`;
-}
-
-function inheritExample(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `class Dog:\n    def bark(self):\n        ${p('"Woof!"')}\nclass Puppy(Dog):\n    def bark(self):\n        ${p('"Yip!"')}\nPuppy().bark()`;
-  if (l.id === 'sql') return p('"Yip!"');
-  return `class Dog { bark(){${p('"Woof!"')};} }\nclass Puppy extends Dog { bark(){${p('"Yip!"')};} }\nnew Puppy().bark();`;
-}
-
-function asyncExample(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `import asyncio\nasync def t():\n    return "done"\n${p('asyncio.run(t())')}`;
-  if (l.id === 'sql') return p('"done"');
-  return `async function t(){ return "done"; }\nt().then(v=>${p('v')});`;
-}
-
-function maxExample(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `${p('max([3, 7, 2, 9, 4])')}`;
-  if (l.id === 'sql') return p('9');
-  return `${p('Math.max(3,7,2,9,4)')};`;
-}
-
-function projectExample(l: CodeLanguage): string {
-  const p = makePrint(l.id);
-  if (l.id === 'python') return `for i in range(1, 6):\n    if i % 15 == 0: ${p('"FizzBuzz"')}\n    elif i % 3 == 0: ${p('"Fizz"')}\n    elif i % 5 == 0: ${p('"Buzz"')}\n    else: ${p('i')}`;
-  if (l.id === 'sql') return `${p('1')}\n${p('2')}\n${p('"Fizz"')}\n${p('4')}\n${p('"Buzz"')}`;
-  return `for(let i=1;i<=5;i++){\n  if(i%15===0) ${p('"FizzBuzz"')};\n  else if(i%3===0) ${p('"Fizz"')};\n  else if(i%5===0) ${p('"Buzz"')};\n  else ${p('i')};\n}`;
-}
-
-// ----------- Theory & quizzes per topic (shared across languages with light specialization) -----------
-
-const THEORY: { title: string; theory: string; challenge: string; hints: string[]; quiz: CodeLesson['quiz'] }[] = [
-  { title: 'Introduction', theory: 'Welcome! Every program needs a way to display output. The "print" / "console.log" / "println" command shows text on the screen — the most fundamental tool in coding.', challenge: 'Print the classic first message: Hello, World!', hints: ['Use the print function for your language.', 'Wrap the text in double quotes.'],
-    quiz: { question: 'Why is "Hello, World!" the traditional first program?', options: ['It tests output works', 'It is required by law', 'It compiles faster', 'No reason'], correct: 0, explanation: 'It is a minimal program that verifies your toolchain prints output correctly.' } },
-  { title: 'Variables', theory: 'A variable is a named container that holds a value. You can change what is inside and reuse the name throughout the program.', challenge: 'Create a variable name = "Ada" and print it.', hints: ['Assign with =', 'Then call print on the variable name (no quotes around the variable)'],
-    quiz: { question: 'A variable is best described as…', options: ['A fixed constant', 'A named storage for a value', 'A loop', 'A function'], correct: 1, explanation: 'Variables are labeled storage you can read and update.' } },
-  { title: 'Data Types', theory: 'Values have types: integers, decimals, text (strings), and booleans. The type controls what operations are valid.', challenge: 'Make an integer variable age = 42 and print it.', hints: ['Integers do not need quotes.', 'Print the variable directly.'],
-    quiz: { question: 'Which is an integer?', options: ['"42"', '42.5', '42', 'true'], correct: 2, explanation: '42 is a whole number.' } },
-  { title: 'Strings', theory: 'Strings are sequences of characters wrapped in quotes. You can combine them with the + operator.', challenge: 'Print exactly: Hello, Coder', hints: ['Use a single print with the full text.', 'Mind the comma and space.'],
-    quiz: { question: 'Which is a string?', options: ['42', 'true', '"hi"', 'null'], correct: 2, explanation: 'A string is a sequence of characters in quotes.' } },
-  { title: 'Numbers & Math', theory: 'Numbers support +, -, *, /. Operators follow standard precedence — multiplication before addition.', challenge: 'Print the result of 12 * 4.', hints: ['No quotes — print the arithmetic expression.'],
-    quiz: { question: 'What does 12 * 4 equal?', options: ['46', '48', '52', '44'], correct: 1, explanation: '12 × 4 = 48.' } },
-  { title: 'Input & Output', theory: 'Output sends data to the user. Each call typically prints on its own line. Multiple prints stack vertically.', challenge: 'Print two separate lines: Hi and Bye.', hints: ['Call print twice.'],
-    quiz: { question: 'What does each print call typically end with?', options: ['Comma', 'Newline', 'Nothing', 'Tab'], correct: 1, explanation: 'Most print commands append a newline by default.' } },
-  { title: 'Booleans', theory: 'Booleans hold true or false. They are the foundation of decisions in your program.', challenge: 'Print a boolean value: true.', hints: ['No quotes around boolean literals.'],
-    quiz: { question: 'How many values can a boolean have?', options: ['1', '2', '3', 'Unlimited'], correct: 1, explanation: 'Only true or false.' } },
-  { title: 'If / Else', theory: 'If statements run code only when a condition is true. Else covers the alternative.', challenge: 'Print "big" if 10 > 5.', hints: ['Wrap your print inside an if condition.'],
-    quiz: { question: 'Else runs when…', options: ['The condition is true', 'Always', 'The condition is false', 'Never'], correct: 2, explanation: 'Else handles the false branch.' } },
-  { title: 'Comparison Operators', theory: '> < >= <= == != return boolean results. They are how you ask the program questions.', challenge: 'Print whether 5 > 3.', hints: ['Print the comparison expression directly.'],
-    quiz: { question: 'Which operator means "not equal"?', options: ['==', '=', '!=', '<>'], correct: 2, explanation: '!= is the standard inequality operator in most languages.' } },
-  { title: 'Logical Operators', theory: 'AND, OR, NOT combine booleans. AND is only true when both sides are true.', challenge: 'Print the result of true AND true.', hints: ['Use && (or "and" in Python).'],
-    quiz: { question: 'true AND false equals…', options: ['true', 'false', 'error', 'null'], correct: 1, explanation: 'AND requires both sides true.' } },
-  { title: 'For Loops', theory: 'For loops repeat a block a known number of times — perfect for iterating from N to M.', challenge: 'Print numbers 1, 2, 3 — each on its own line.', hints: ['Use a for loop from 1 to 3.', 'Print the loop variable each iteration.'],
-    quiz: { question: 'A for loop is best for…', options: ['Unknown counts', 'Known counts', 'Async work', 'Errors'], correct: 1, explanation: 'For loops shine when the number of iterations is known.' } },
-  { title: 'While Loops', theory: 'While loops repeat as long as a condition stays true. Use them when you do not know how many iterations you need.', challenge: 'Use a while loop to print 1, 2, 3.', hints: ['Start i at 1, stop when i > 3.', 'Increment i each iteration.'],
-    quiz: { question: 'A while loop stops when…', options: ['The condition is true', 'It iterates 10 times', 'The condition is false', 'Always after 1 run'], correct: 2, explanation: 'While runs as long as condition is true.' } },
-  { title: 'Functions Basics', theory: 'Functions are reusable blocks of code. Define once, call many times — the foundation of clean programs.', challenge: 'Define greet() that prints "Hello!" and call it.', hints: ['Define the function, then call it on the next line.'],
-    quiz: { question: 'Functions help you…', options: ['Repeat code', 'Reuse logic', 'Slow things down', 'Crash often'], correct: 1, explanation: 'They eliminate duplication and improve clarity.' } },
-  { title: 'Function Parameters', theory: 'Parameters let functions accept inputs. Same logic, different data — generic and powerful.', challenge: 'Function greet(name) that prints "Hello, <name>!". Call with "Ada".', hints: ['Concatenate the parameter into the message.'],
-    quiz: { question: 'Parameters are…', options: ['Variables for inputs', 'Outputs only', 'Errors', 'Loops'], correct: 0, explanation: 'They receive values when a function is called.' } },
-  { title: 'Return Values', theory: 'Functions can return a value so callers can use the result. This enables composition.', challenge: 'Function add(a, b) returns a+b. Print add(2, 3).', hints: ['Use the return keyword.', 'Print the result of calling add.'],
-    quiz: { question: 'Return values let you…', options: ['Print to screen', 'Pass data back to the caller', 'Stop the program', 'Loop forever'], correct: 1, explanation: 'Return is how a function communicates back its result.' } },
-  { title: 'Arrays / Lists', theory: 'Arrays hold ordered collections of values. Access by index, starting from 0.', challenge: 'Create [1, 2, 3] and print its first element.', hints: ['Indexing starts at 0.'],
-    quiz: { question: 'In most languages, the first index is…', options: ['0', '1', '-1', 'a'], correct: 0, explanation: 'Zero-indexed arrays are standard.' } },
-  { title: 'Array Methods', theory: 'Built-in methods like length/size and push/append make arrays powerful.', challenge: 'Print the length of [10, 20, 30].', hints: ['Use len() in Python or .length in JS.'],
-    quiz: { question: 'Length of [10, 20, 30] is…', options: ['2', '3', '4', '0'], correct: 1, explanation: 'Three elements means length 3.' } },
-  { title: 'Iteration & Aggregation', theory: 'Combine loops with arrays to compute totals, averages, max — the backbone of data work.', challenge: 'Print the sum of numbers 1..5 using a loop.', hints: ['Accumulate into a running total.', 'Initialize total to 0.'],
-    quiz: { question: 'Sum of 1+2+3+4+5 is…', options: ['10', '15', '20', '25'], correct: 1, explanation: '1+2+3+4+5 = 15.' } },
-  { title: 'Objects / Dictionaries', theory: 'Objects map keys to values — great for representing entities like a user or product.', challenge: 'Object with name="Ada" age=36 — print name.', hints: ['Access by key.'],
-    quiz: { question: 'Objects map…', options: ['Numbers to numbers', 'Keys to values', 'Loops to functions', 'Files to strings'], correct: 1, explanation: 'Key-value mapping is the defining structure.' } },
-  { title: 'Object Methods', theory: 'You can inspect the number of keys, list them, or iterate. Powerful for dynamic structures.', challenge: 'Print the number of keys in {a:1, b:2, c:3}.', hints: ['Use Object.keys or len().'],
-    quiz: { question: 'Number of keys in {a:1,b:2,c:3} is…', options: ['2', '3', '4', '1'], correct: 1, explanation: 'Three keys.' } },
-  { title: 'Scope & Closures', theory: 'Variables defined inside a function are private. A closure captures outer variables for later use — basis of advanced patterns.', challenge: 'Create a counter that prints 1 then 2.', hints: ['Inner function increments outer variable.'],
-    quiz: { question: 'A closure is…', options: ['A loop', 'A function that captures its outer scope', 'An error', 'A class'], correct: 1, explanation: 'Closures retain references to enclosing variables.' } },
-  { title: 'Error Handling', theory: 'try / catch (except) lets your program recover from errors gracefully instead of crashing.', challenge: 'Use try/catch to print "caught" on error.', hints: ['Throw or trigger an error inside try.'],
-    quiz: { question: 'try/catch is used to…', options: ['Speed code', 'Handle errors gracefully', 'Define variables', 'Print fast'], correct: 1, explanation: 'It separates normal flow from error recovery.' } },
-  { title: 'Modules & Imports', theory: 'Import lets you reuse code from standard libraries or other files — the heart of code organization.', challenge: 'Use a built-in math function: print sqrt(16) = 4.', hints: ['Import math (Python) or Math.sqrt (JS).'],
-    quiz: { question: 'Imports help you…', options: ['Speed loops', 'Reuse existing code', 'Throw errors', 'Print faster'], correct: 1, explanation: 'They bring functions from libraries into your file.' } },
-  { title: 'Classes (OOP)', theory: 'A class is a blueprint for objects — bundling data (fields) and behavior (methods) together.', challenge: 'Class Dog with bark() printing "Woof!" — call it.', hints: ['Define the class then instantiate it.'],
-    quiz: { question: 'A class is…', options: ['A function', 'A blueprint for objects', 'A variable', 'A file'], correct: 1, explanation: 'Classes define structure and behavior for objects.' } },
-  { title: 'Inheritance', theory: 'A subclass inherits from a parent and can override behavior — enabling code reuse via hierarchy.', challenge: 'Class Puppy extends Dog, override bark to print "Yip!".', hints: ['Use extends / inherit syntax.', 'Override the method in the child.'],
-    quiz: { question: 'Inheritance lets a class…', options: ['Run faster', 'Reuse and extend another class', 'Throw errors', 'Be private'], correct: 1, explanation: 'Children inherit parent members and can override them.' } },
-  { title: 'File Handling', theory: 'Reading and writing files lets your program persist data between runs. Always close (or use with/auto-close) the file.', challenge: 'Pretend you read a file containing "hi". Print it.', hints: ['Just print the string for this simulation.'],
-    quiz: { question: 'Why close a file after use?', options: ['Free resources', 'Make it faster', 'Encrypt data', 'No reason'], correct: 0, explanation: 'Open file handles consume OS resources.' } },
-  { title: 'Async & Promises', theory: 'Async lets your code do other work while waiting on slow tasks (network, disk). Promises represent future values.', challenge: 'Define an async task that resolves with "done" and print it.', hints: ['Use async/await or Promise.then.'],
-    quiz: { question: 'Async code is best for…', options: ['Pure math', 'Waiting on IO', 'Simple prints', 'Constants'], correct: 1, explanation: 'IO-bound work benefits the most.' } },
-  { title: 'APIs & HTTP', theory: 'APIs let your program talk to other services over the network using HTTP. JSON is the standard data format.', challenge: 'Print the simulated API response: 200 OK.', hints: ['Just print the success string for this exercise.'],
-    quiz: { question: 'HTTP 200 means…', options: ['Error', 'Success', 'Not found', 'Server crashed'], correct: 1, explanation: '2xx codes indicate success.' } },
-  { title: 'Algorithms', theory: 'Algorithms are step-by-step procedures. Finding a max, sorting, and searching are foundational patterns.', challenge: 'Find and print the largest of [3, 7, 2, 9, 4].', hints: ['Use a built-in max function or loop comparing values.'],
-    quiz: { question: 'Largest of [3,7,2,9,4] is…', options: ['7', '9', '4', '3'], correct: 1, explanation: '9 is the largest.' } },
-  { title: 'Final Project', theory: 'FizzBuzz — the classic interview warmup. Combine loops, conditions, and modulo into a polished mini-project.', challenge: 'Print FizzBuzz from 1 to 5: 1, 2, Fizz, 4, Buzz.', hints: ['Check %15 first, then %3, then %5, else the number.', 'Print each result on its own line.'],
-    quiz: { question: 'In FizzBuzz, what prints for 15?', options: ['Fizz', 'Buzz', 'FizzBuzz', '15'], correct: 2, explanation: '15 is divisible by both 3 and 5, so FizzBuzz.' } },
+// ===== BEGINNER (200) =====
+const BEGINNER_TEMPLATES: Template[] = [
+  // 50 — print a phrase
+  ...PHRASES.flatMap((phrase, idx) => Array.from({ length: 5 }, (_, j) => ({
+    topic: 'Print Output',
+    difficulty: 'Easy' as const, baseXp: 20,
+    theory: 'A program needs a way to display text. The print / log / println command shows output on the screen — the most fundamental tool in any language.',
+    hints: ['Use your language\'s print command.', 'Wrap text in double quotes.', 'Match the expected text exactly, including punctuation.'],
+    quiz: { question: 'What does print do?', options: ['Loops', 'Displays output', 'Defines a variable', 'Stops the program'], correct: 1, explanation: 'Print sends text to the standard output.' },
+    gen: () => ({ challenge: `Print the exact text: ${phrase}${j > 0 ? ` (repeat ${j + 1})` : ''}`, expectedOutput: phrase, titleSuffix: `"${phrase.slice(0, 18)}${phrase.length > 18 ? '…' : ''}"` }),
+  }))),
+  // 120 — arithmetic
+  ...Array.from({ length: 120 }, (_, i) => {
+    const ops: Array<['+' | '-' | '*' | '/', (a: number, b: number) => number]> = [
+      ['+', (a, b) => a + b], ['-', (a, b) => a - b], ['*', (a, b) => a * b], ['/', (a, b) => Math.floor(a / b)],
+    ];
+    const op = ops[i % 4];
+    const a = 2 + ((i * 7) % 40);
+    const b = 1 + ((i * 3) % 12);
+    const result = op[1](a, b);
+    return {
+      topic: 'Numbers & Math',
+      difficulty: 'Easy' as const, baseXp: 22,
+      theory: 'Numbers support +, -, *, /. Operators follow standard precedence — multiplication and division happen before addition and subtraction.',
+      hints: ['Print the arithmetic expression — no quotes.', 'Use integer division if the language differs.'],
+      quiz: { question: 'Which operator means multiply?', options: ['+', '*', '/', '%'], correct: 1, explanation: '* is multiplication in nearly every language.' },
+      gen: () => ({ challenge: `Compute and print: ${a} ${op[0]} ${b}`, expectedOutput: String(result), titleSuffix: `${a} ${op[0]} ${b}` }),
+    };
+  }),
+  // 15 — comparisons
+  ...Array.from({ length: 15 }, (_, i) => {
+    const a = 2 + i * 3, b = 1 + ((i * 5) % 30);
+    const r = a > b;
+    return {
+      topic: 'Comparison Operators',
+      difficulty: 'Easy' as const, baseXp: 24,
+      theory: 'Comparison operators (>, <, >=, <=, ==, !=) return a boolean — true or false — used everywhere in conditions.',
+      hints: ['Print the comparison expression directly.', 'Python returns capital True/False.'],
+      quiz: { question: '5 > 3 evaluates to…', options: ['1', 'true', '"yes"', '5'], correct: 1, explanation: 'It is a boolean true.' },
+      gen: () => ({ challenge: `Print whether ${a} > ${b}`, expectedOutput: r ? 'true' : 'false', titleSuffix: `${a} > ${b}` }),
+    };
+  }),
+  // 5 — loop 1..N
+  ...Array.from({ length: 5 }, (_, i) => {
+    const n = 3 + i;
+    const out = Array.from({ length: n }, (_, k) => k + 1).join('\n');
+    return {
+      topic: 'For Loops',
+      difficulty: 'Easy' as const, baseXp: 28,
+      theory: 'For loops repeat a block a known number of times. They are perfect for counting.',
+      hints: ['Loop from 1 to N inclusive.', 'Print the loop variable each iteration.'],
+      quiz: { question: 'A for loop is best for…', options: ['Unknown counts', 'Known counts', 'Errors', 'Async'], correct: 1, explanation: 'For loops shine when the iteration count is known.' },
+      gen: () => ({ challenge: `Print each number from 1 to ${n} on its own line.`, expectedOutput: out, titleSuffix: `1..${n}` }),
+    };
+  }),
+  // 10 — repeated word
+  ...Array.from({ length: 10 }, (_, i) => {
+    const word = WORDS[i % WORDS.length];
+    const n = 2 + (i % 4);
+    const out = Array.from({ length: n }, () => word).join('\n');
+    return {
+      topic: 'Repetition',
+      difficulty: 'Easy' as const, baseXp: 26,
+      theory: 'Loops can repeat the same output. Combine a for loop with a print statement to repeat a value N times.',
+      hints: ['Use a loop, print the same word inside it.'],
+      quiz: { question: 'What prints a line N times?', options: ['One print', 'A loop with print', 'Just N', 'A function call'], correct: 1, explanation: 'A loop body is executed once per iteration.' },
+      gen: () => ({ challenge: `Print "${word}" exactly ${n} times — each on its own line.`, expectedOutput: out, titleSuffix: `"${word}" × ${n}` }),
+    };
+  }),
 ];
 
-// Public: build all lessons for a language
+// ===== INTERMEDIATE (200) =====
+const INTERMEDIATE_TEMPLATES: Template[] = [
+  // 40 — sum of array
+  ...Array.from({ length: 40 }, (_, i) => {
+    const len = 4 + (i % 6);
+    const arr = Array.from({ length: len }, (_, k) => 1 + ((i * 3 + k * 7) % 20));
+    const s = arr.reduce((a, b) => a + b, 0);
+    return {
+      topic: 'Array Aggregation',
+      difficulty: 'Medium' as const, baseXp: 40,
+      theory: 'Loops + accumulators compute totals over a collection. This is the backbone of analytics, scoring, and finance code.',
+      hints: ['Start a running total at 0.', 'Add each element in a loop.', 'Print the total after the loop.'],
+      quiz: { question: 'What initial value does a sum accumulator need?', options: ['1', '0', 'undefined', 'the first element'], correct: 1, explanation: '0 is the additive identity.' },
+      gen: () => ({ challenge: `Compute and print the sum of: [${arr.join(', ')}]`, expectedOutput: String(s), titleSuffix: `sum(${len})` }),
+    };
+  }),
+  // 40 — max of array
+  ...Array.from({ length: 40 }, (_, i) => {
+    const len = 4 + (i % 5);
+    const arr = Array.from({ length: len }, (_, k) => 1 + ((i * 11 + k * 5) % 50));
+    const m = Math.max(...arr);
+    return {
+      topic: 'Finding Max',
+      difficulty: 'Medium' as const, baseXp: 42,
+      theory: 'Finding the largest element is a classic linear scan: keep track of the largest seen so far while iterating.',
+      hints: ['Start with the first element.', 'Compare each next element and update if larger.'],
+      quiz: { question: 'Time complexity of a linear max scan?', options: ['O(1)', 'O(log n)', 'O(n)', 'O(n²)'], correct: 2, explanation: 'You touch each element once.' },
+      gen: () => ({ challenge: `Print the maximum value in: [${arr.join(', ')}]`, expectedOutput: String(m), titleSuffix: `max(${len})` }),
+    };
+  }),
+  // 40 — min of array
+  ...Array.from({ length: 40 }, (_, i) => {
+    const len = 4 + (i % 5);
+    const arr = Array.from({ length: len }, (_, k) => 5 + ((i * 13 + k * 9) % 70));
+    const m = Math.min(...arr);
+    return {
+      topic: 'Finding Min',
+      difficulty: 'Medium' as const, baseXp: 42,
+      theory: 'Finding the minimum mirrors finding the max. Keep a running winner and update when you see a smaller value.',
+      hints: ['Initialize with a very large value or the first element.'],
+      quiz: { question: 'Minimum of [3,1,4]?', options: ['3', '1', '4', '0'], correct: 1, explanation: '1 is the smallest.' },
+      gen: () => ({ challenge: `Print the minimum value in: [${arr.join(', ')}]`, expectedOutput: String(m), titleSuffix: `min(${len})` }),
+    };
+  }),
+  // 30 — reverse string
+  ...Array.from({ length: 30 }, (_, i) => {
+    const w = WORDS[i % WORDS.length] + (i > 9 ? String(i) : '');
+    return {
+      topic: 'String Reversal',
+      difficulty: 'Medium' as const, baseXp: 44,
+      theory: 'Reversing a string is a fundamental algorithm — useful for palindrome checks, text processing, and interview questions.',
+      hints: ['Loop from the last character backwards.', 'Most languages have a built-in reverse.'],
+      quiz: { question: 'Reverse of "abc" is…', options: ['"abc"', '"cba"', '"bca"', '"acb"'], correct: 1, explanation: 'Read from end to start.' },
+      gen: () => ({ challenge: `Reverse and print the string: "${w}"`, expectedOutput: reverseStr(w), titleSuffix: `reverse("${w}")` }),
+    };
+  }),
+  // 25 — vowel count
+  ...Array.from({ length: 25 }, (_, i) => {
+    const w = WORDS[i % WORDS.length];
+    return {
+      topic: 'Counting Vowels',
+      difficulty: 'Medium' as const, baseXp: 44,
+      theory: 'Iterate through each character and increment a counter when you see a vowel. A great use case for sets or membership tests.',
+      hints: ['Vowels = a, e, i, o, u.', 'Use a counter starting at 0.'],
+      quiz: { question: 'How many vowels in "hello"?', options: ['1', '2', '3', '4'], correct: 1, explanation: 'e and o → 2 vowels.' },
+      gen: () => ({ challenge: `Count and print the number of vowels in: "${w}"`, expectedOutput: String(countVowels(w)), titleSuffix: `vowels("${w}")` }),
+    };
+  }),
+  // 25 — Fibonacci nth
+  ...Array.from({ length: 25 }, (_, i) => {
+    const n = 5 + i;
+    return {
+      topic: 'Fibonacci Numbers',
+      difficulty: 'Medium' as const, baseXp: 48,
+      theory: 'The Fibonacci sequence: each number is the sum of the two before it. F(0)=0, F(1)=1, F(n)=F(n-1)+F(n-2).',
+      hints: ['Use two variables and update them in a loop.', 'Avoid naive recursion for large n.'],
+      quiz: { question: 'F(6) =', options: ['5', '8', '13', '21'], correct: 1, explanation: '0,1,1,2,3,5,8 → F(6)=8.' },
+      gen: () => ({ challenge: `Compute and print Fibonacci number F(${n}) (where F(0)=0, F(1)=1).`, expectedOutput: String(fib(n)), titleSuffix: `F(${n})` }),
+    };
+  }),
+];
+
+// ===== ADVANCED (200) =====
+const ADVANCED_TEMPLATES: Template[] = [
+  // 30 factorial
+  ...Array.from({ length: 30 }, (_, i) => {
+    const n = 3 + i % 12;
+    return {
+      topic: 'Recursion: Factorial',
+      difficulty: 'Hard' as const, baseXp: 60,
+      theory: 'Factorial n! = n × (n-1) × … × 1. Naturally recursive: factorial(n) = n × factorial(n-1) with base case factorial(0)=1.',
+      hints: ['Base case: 0! = 1.', 'Recursive: n * factorial(n-1).', 'Watch overflow on large n.'],
+      quiz: { question: 'Base case for factorial recursion?', options: ['0', '1', '-1', 'n'], correct: 0, explanation: '0! = 1 stops recursion.' },
+      gen: () => ({ challenge: `Compute and print ${n}! (factorial of ${n}).`, expectedOutput: String(factorial(n)), titleSuffix: `${n}!` }),
+    };
+  }),
+  // 30 GCD
+  ...Array.from({ length: 30 }, (_, i) => {
+    const a = 12 + i * 7, b = 8 + (i * 11) % 50;
+    return {
+      topic: 'Euclidean GCD',
+      difficulty: 'Hard' as const, baseXp: 62,
+      theory: 'Greatest Common Divisor via Euclid: gcd(a, b) = gcd(b, a mod b), with base case gcd(a, 0) = a. O(log min(a, b)).',
+      hints: ['Use modulo (%) repeatedly.', 'Base case is when b becomes 0.'],
+      quiz: { question: 'gcd(12, 18) =', options: ['2', '4', '6', '12'], correct: 2, explanation: '6 is the greatest common divisor.' },
+      gen: () => ({ challenge: `Compute and print gcd(${a}, ${b}).`, expectedOutput: String(gcd(a, b)), titleSuffix: `gcd(${a}, ${b})` }),
+    };
+  }),
+  // 30 isPrime
+  ...Array.from({ length: 30 }, (_, i) => {
+    const n = 2 + (i * 7) % 200;
+    return {
+      topic: 'Primality Test',
+      difficulty: 'Hard' as const, baseXp: 64,
+      theory: 'A prime is divisible only by 1 and itself. Efficient check: trial division up to sqrt(n). O(sqrt n).',
+      hints: ['Numbers < 2 are not prime.', 'Test divisors 2..sqrt(n).'],
+      quiz: { question: 'Why test only up to sqrt(n)?', options: ['Easier to type', 'Larger factors pair with smaller ones', 'Random optimization', 'Wrong — must go to n'], correct: 1, explanation: 'If n = a*b and a ≤ b, then a ≤ sqrt(n).' },
+      gen: () => ({ challenge: `Is ${n} prime? Print "true" or "false".`, expectedOutput: isPrime(n) ? 'true' : 'false', titleSuffix: `prime(${n})` }),
+    };
+  }),
+  // 30 sort descending, print first
+  ...Array.from({ length: 30 }, (_, i) => {
+    const len = 5 + (i % 5);
+    const arr = Array.from({ length: len }, (_, k) => 1 + ((i * 17 + k * 13) % 90));
+    const sorted = [...arr].sort((a, b) => b - a);
+    return {
+      topic: 'Sorting',
+      difficulty: 'Hard' as const, baseXp: 66,
+      theory: 'Sorting is fundamental. Built-ins typically run O(n log n). Quicksort and mergesort are the classic implementations.',
+      hints: ['Sort descending, then print the first element (= max).', 'Built-in sort takes a comparator.'],
+      quiz: { question: 'Best case complexity of mergesort?', options: ['O(n)', 'O(n log n)', 'O(log n)', 'O(n²)'], correct: 1, explanation: 'Mergesort is O(n log n) in all cases.' },
+      gen: () => ({ challenge: `Sort [${arr.join(', ')}] descending and print the largest value.`, expectedOutput: String(sorted[0]), titleSuffix: `sort desc` }),
+    };
+  }),
+  // 30 binary search
+  ...Array.from({ length: 30 }, (_, i) => {
+    const len = 8 + (i % 6);
+    const arr = Array.from({ length: len }, (_, k) => k * 2 + (i % 3));
+    const target = arr[(i * 5) % arr.length];
+    const idx = arr.indexOf(target);
+    return {
+      topic: 'Binary Search',
+      difficulty: 'Hard' as const, baseXp: 70,
+      theory: 'Binary search finds a value in a sorted array in O(log n) by halving the search range each iteration.',
+      hints: ['Maintain low and high pointers.', 'Compare middle to target.'],
+      quiz: { question: 'Binary search complexity?', options: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'], correct: 1, explanation: 'Each step halves the range.' },
+      gen: () => ({ challenge: `Use binary search to find the index of ${target} in [${arr.join(', ')}]. Print the index.`, expectedOutput: String(idx), titleSuffix: `bsearch(${target})` }),
+    };
+  }),
+  // 25 palindrome
+  ...Array.from({ length: 25 }, (_, i) => {
+    const words = ['racecar', 'hello', 'level', 'world', 'noon', 'civic', 'world', 'kayak', 'apple', 'rotor', 'banana', 'madam', 'deed', 'pixel'];
+    const w = words[i % words.length] + (i >= words.length ? String.fromCharCode(97 + (i % 5)) : '');
+    return {
+      topic: 'Palindrome Check',
+      difficulty: 'Hard' as const, baseXp: 60,
+      theory: 'A palindrome reads the same forwards and backwards. Compare the string to its reverse, or two-pointer scan from both ends.',
+      hints: ['Two pointers: one at start, one at end.', 'Compare characters until they meet.'],
+      quiz: { question: 'Is "racecar" a palindrome?', options: ['Yes', 'No'], correct: 0, explanation: 'It reads the same both ways.' },
+      gen: () => ({ challenge: `Is "${w}" a palindrome? Print "true" or "false".`, expectedOutput: isPalindrome(w) ? 'true' : 'false', titleSuffix: `palindrome("${w}")` }),
+    };
+  }),
+  // 25 OOP-flavoured: instantiate animal and print sound
+  ...Array.from({ length: 25 }, (_, i) => {
+    const animals: Array<[string, string]> = [['Dog', 'Woof'], ['Cat', 'Meow'], ['Cow', 'Moo'], ['Duck', 'Quack'], ['Frog', 'Ribbit'], ['Owl', 'Hoot'], ['Sheep', 'Baa'], ['Pig', 'Oink'], ['Lion', 'Roar'], ['Snake', 'Hiss']];
+    const [name, sound] = animals[i % animals.length];
+    return {
+      topic: 'OOP — Classes',
+      difficulty: 'Hard' as const, baseXp: 58,
+      theory: 'Classes bundle data and behaviour. A method is a function attached to a class — typed on instances created from that class.',
+      hints: ['Define a class with a single method that prints the sound.', 'Instantiate the class and call the method.'],
+      quiz: { question: 'A class is best described as…', options: ['A loop', 'A blueprint for objects', 'A variable', 'A file'], correct: 1, explanation: 'Classes define the shape and behaviour of objects.' },
+      gen: () => ({ challenge: `Define a class ${name} with a method speak() that prints "${sound}". Instantiate and call it.`, expectedOutput: sound, titleSuffix: `${name}.speak()` }),
+    };
+  }),
+];
+
+// ===== EXPERT (200) =====
+const EXPERT_TEMPLATES: Template[] = [
+  // 30 — fast Fibonacci (memoization)
+  ...Array.from({ length: 30 }, (_, i) => {
+    const n = 25 + i * 2; // big enough that naive recursion struggles
+    return {
+      topic: 'DP — Memoized Fibonacci',
+      difficulty: 'Expert' as const, baseXp: 90,
+      theory: 'Naive recursive Fibonacci is exponential. Memoization (top-down) or tabulation (bottom-up) reduces it to O(n) time and O(n) space.',
+      hints: ['Cache previously computed values.', 'Bottom-up iteration uses two rolling variables for O(1) space.'],
+      quiz: { question: 'Naive recursive Fibonacci time complexity?', options: ['O(n)', 'O(log n)', 'O(2^n)', 'O(n log n)'], correct: 2, explanation: 'It branches into two calls per step → exponential.' },
+      gen: () => ({ challenge: `Efficiently compute Fibonacci F(${n}) using DP or iteration. Print the result.`, expectedOutput: String(fib(n)), titleSuffix: `F(${n}) DP` }),
+    };
+  }),
+  // 30 — coin change minimum coins (DP)
+  ...Array.from({ length: 30 }, (_, i) => {
+    const coinSets = [[1, 5, 10, 25], [1, 3, 4], [2, 5, 10], [1, 7, 10], [1, 5, 6, 9], [1, 2, 5]];
+    const coins = coinSets[i % coinSets.length];
+    const amount = 11 + (i * 7) % 80;
+    return {
+      topic: 'DP — Coin Change',
+      difficulty: 'Expert' as const, baseXp: 100,
+      theory: 'Coin change: given coin denominations, find the minimum number of coins to make a target amount. Classic 1D dynamic programming over amount 0..N.',
+      hints: ['dp[0] = 0, dp[i] = min(dp[i - c] + 1) for each coin c.', 'Initialize dp with Infinity.'],
+      quiz: { question: 'Coin change DP state represents…', options: ['Number of coins used so far', 'Min coins to make amount i', 'Max amount with i coins', 'Random'], correct: 1, explanation: 'dp[i] = minimum coins required to make amount i.' },
+      gen: () => ({ challenge: `Coins ${JSON.stringify(coins)}, amount ${amount}. Print the minimum number of coins (or -1 if impossible).`, expectedOutput: String(coinChange(amount, coins)), titleSuffix: `coins(${amount})` }),
+    };
+  }),
+  // 30 — climbing stairs
+  ...Array.from({ length: 30 }, (_, i) => {
+    const n = 15 + i * 2;
+    return {
+      topic: 'DP — Climbing Stairs',
+      difficulty: 'Expert' as const, baseXp: 88,
+      theory: 'How many distinct ways to climb n stairs taking 1 or 2 steps? Recurrence: ways(n) = ways(n-1) + ways(n-2) — the Fibonacci recurrence.',
+      hints: ['ways(1)=1, ways(2)=2.', 'Iterative DP with two variables = O(1) space.'],
+      quiz: { question: 'Climbing stairs reduces to which sequence?', options: ['Triangular', 'Fibonacci', 'Catalan', 'Prime'], correct: 1, explanation: 'Each state depends on the previous two.' },
+      gen: () => ({ challenge: `Print the number of distinct ways to climb ${n} stairs taking 1 or 2 steps at a time.`, expectedOutput: String(climbStairs(n)), titleSuffix: `stairs(${n})` }),
+    };
+  }),
+  // 25 — longest common prefix length
+  ...Array.from({ length: 25 }, (_, i) => {
+    const pool = ['flower', 'flow', 'flight', 'flatten', 'fleet', 'climb', 'climber', 'clip', 'clinic', 'clinical', 'space', 'spark', 'spectrum', 'speed'];
+    const start = i % (pool.length - 3);
+    const arr = pool.slice(start, start + 3 + (i % 3));
+    const lcp = longestCommonPrefix(arr);
+    return {
+      topic: 'String DP — Longest Common Prefix',
+      difficulty: 'Expert' as const, baseXp: 86,
+      theory: 'Longest Common Prefix: scan character-by-character across all strings, stopping at the first mismatch. O(S) where S is total characters.',
+      hints: ['Compare each character of the first string with the rest.', 'Stop on first mismatch or string end.'],
+      quiz: { question: 'LCP of ["flower","flow","flight"] is…', options: ['"flow"', '"fl"', '""', '"f"'], correct: 1, explanation: '"fl" is shared by all three.' },
+      gen: () => ({ challenge: `Find the longest common prefix length of ${JSON.stringify(arr)}. Print the length.`, expectedOutput: String(lcp.length), titleSuffix: `LCP×${arr.length}` }),
+    };
+  }),
+  // 25 — number of distinct chars
+  ...Array.from({ length: 25 }, (_, i) => {
+    const w = (WORDS[i % WORDS.length] + WORDS[(i + 3) % WORDS.length]).toLowerCase();
+    const unique = new Set(w).size;
+    return {
+      topic: 'Set Theory',
+      difficulty: 'Expert' as const, baseXp: 80,
+      theory: 'Counting unique characters tests your understanding of hash sets — O(n) time, O(k) space where k = alphabet size.',
+      hints: ['Add each character to a set.', 'Return the size of the set.'],
+      quiz: { question: 'Unique chars in "hello"?', options: ['5', '4', '3', '2'], correct: 1, explanation: '{h,e,l,o} = 4 unique.' },
+      gen: () => ({ challenge: `Count distinct characters in: "${w}". Print the count.`, expectedOutput: String(unique), titleSuffix: `unique("${w.slice(0, 10)}")` }),
+    };
+  }),
+  // 30 — sum of digits raised to power
+  ...Array.from({ length: 30 }, (_, i) => {
+    const n = 100 + i * 37;
+    const p = 1 + (i % 4);
+    const ans = String(n).split('').reduce((a, c) => a + Math.pow(Number(c), p), 0);
+    return {
+      topic: 'Number Theory',
+      difficulty: 'Expert' as const, baseXp: 82,
+      theory: 'Decompose a number into its digits, then transform and aggregate. Foundation for problems like Armstrong numbers, digital roots, happy numbers.',
+      hints: ['Repeatedly take n % 10 to extract digits.', 'Sum digit^p as you go.'],
+      quiz: { question: 'How do you extract the last digit of an integer?', options: ['n / 10', 'n % 10', 'log(n)', 'n - 1'], correct: 1, explanation: 'Modulo by 10 gives the last decimal digit.' },
+      gen: () => ({ challenge: `For n=${n}, compute the sum of (each digit)^${p} and print it.`, expectedOutput: String(ans), titleSuffix: `digit^${p}(${n})` }),
+    };
+  }),
+  // 30 — system-design-style trace problems (output a deterministic answer)
+  ...Array.from({ length: 30 }, (_, i) => {
+    // Cache LRU: simulate hits over a sequence
+    const cap = 3;
+    const seq = [1, 2, 3, 1, 4, 2, 5, 1, 3, 2, 4, 5][((i * 3) % 4)] === 0 ? [1, 2, 3, 1, 4] : [1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5];
+    // simulate LRU
+    const lru = new Map<number, true>();
+    let hits = 0;
+    for (const k of seq) {
+      if (lru.has(k)) { hits++; lru.delete(k); lru.set(k, true); }
+      else { lru.set(k, true); if (lru.size > cap) { const oldest = lru.keys().next().value as number; lru.delete(oldest); } }
+    }
+    return {
+      topic: 'System Design — LRU Cache',
+      difficulty: 'Expert' as const, baseXp: 110,
+      theory: 'An LRU (Least Recently Used) cache evicts the entry not accessed for the longest time when full. Hash map + doubly linked list = O(1) get/put.',
+      hints: ['Map insertion order matters — recently-used items go to the end.', 'On full, evict the oldest entry.'],
+      quiz: { question: 'LRU eviction policy removes…', options: ['Largest', 'Least recently used', 'Random', 'Most recently used'], correct: 1, explanation: 'The entry untouched the longest is removed first.' },
+      gen: () => ({ challenge: `Simulate an LRU cache of capacity ${cap} processing the access sequence ${JSON.stringify(seq)}. Print the number of cache hits.`, expectedOutput: String(hits), titleSuffix: `LRU hits` }),
+    };
+  }),
+];
+
+// ---------- Stitch everything together ----------
+
+function pad(level: CodeLevel, templates: Template[]): Template[] {
+  // Defensive: ensure we have exactly LESSONS_PER_LEVEL templates
+  const out = [...templates];
+  while (out.length < LESSONS_PER_LEVEL) out.push(templates[out.length % templates.length]);
+  return out.slice(0, LESSONS_PER_LEVEL);
+}
+
+const ALL_TEMPLATES: Record<CodeLevel, Template[]> = {
+  beginner:     pad('beginner',     BEGINNER_TEMPLATES),
+  intermediate: pad('intermediate', INTERMEDIATE_TEMPLATES),
+  advanced:     pad('advanced',     ADVANCED_TEMPLATES),
+  expert:       pad('expert',       EXPERT_TEMPLATES),
+};
+
+// Cache built lessons per language so we don't rebuild on every render.
+const LESSON_CACHE = new Map<string, CodeLesson[]>();
+
 export function getLessons(langId: string): CodeLesson[] {
+  const cached = LESSON_CACHE.get(langId);
+  if (cached) return cached;
   const lang = CODE_LANGUAGES.find(l => l.id === langId);
   if (!lang) return [];
-  const content = buildLangContent(lang);
-  return TOPICS.map((topic, i) => {
-    const t = THEORY[i];
-    const c = content.examples[i] || { example: '', starter: '', solution: '', expected: '' };
-    return {
-      index: i,
-      title: `${i + 1}. ${t.title}`,
-      topic: t.title,
-      difficulty: DIFFICULTY[i],
-      theory: t.theory,
-      example: c.example,
-      challenge: t.challenge,
-      starterCode: c.starter,
-      expectedOutput: c.expected,
-      hints: t.hints,
-      solution: c.solution,
-      quiz: t.quiz,
-      baseXp: BASE_XP[i],
-    };
+
+  const lessons: CodeLesson[] = [];
+  let globalIdx = 0;
+  (['beginner', 'intermediate', 'advanced', 'expert'] as CodeLevel[]).forEach(level => {
+    const templates = ALL_TEMPLATES[level];
+    templates.forEach((tpl, j) => {
+      const g = tpl.gen(j);
+      lessons.push({
+        index: globalIdx,
+        level,
+        levelIndex: j + 1,
+        title: `${j + 1}. ${tpl.topic} — ${g.titleSuffix}`,
+        topic: tpl.topic,
+        difficulty: tpl.difficulty,
+        theory: tpl.theory,
+        example: '',                 // user must write from scratch
+        challenge: g.challenge,
+        starterCode: '',             // empty editor by design
+        expectedOutput: g.expectedOutput,
+        hints: tpl.hints,
+        solution: makeSolution(lang.id, g.expectedOutput),
+        quiz: tpl.quiz,
+        baseXp: tpl.baseXp,
+      });
+      globalIdx++;
+    });
   });
+
+  LESSON_CACHE.set(langId, lessons);
+  return lessons;
 }
 
 export function getLanguage(langId: string): CodeLanguage | undefined {
   return CODE_LANGUAGES.find(l => l.id === langId);
 }
 
-export function getLevel(levelId: string) {
+export function getLevel(levelId: string): CodeLevelMeta | undefined {
   return CODE_LEVELS.find(l => l.id === levelId);
+}
+
+export function getLessonsForLevel(langId: string, levelId: CodeLevel): CodeLesson[] {
+  return getLessons(langId).filter(l => l.level === levelId);
 }
