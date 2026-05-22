@@ -39,7 +39,6 @@ function saveProgress(key: string, p: Progress) {
 export default function CodeLessonPage() {
   const { lang: langId, level: levelId } = useParams<{ lang: string; level: string }>();
   const { authUser, authLoading, addXp, language } = useApp();
-  const { t } = useTranslation(language);
 
   const lang = getLanguage(langId || '');
   const level = getLevel(levelId || '');
