@@ -20,7 +20,7 @@ export default function CodeHomePage() {
           </div>
           <h1 className="text-4xl font-bold text-foreground">{'<Code/>'} Academy</h1>
           <p className="text-muted-foreground mt-2 max-w-xl mx-auto">
-            Master 10 programming languages. {totalLessons.toLocaleString()} lessons per language across 4 levels. Real IDE. Real challenges.
+            Master 14 programming languages. {totalLessons.toLocaleString()} lessons per language across 4 levels. Real IDE. Real challenges.
           </p>
         </motion.div>
 
