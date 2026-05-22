@@ -18,6 +18,10 @@ const PRINT_PATTERNS: Record<string, RegExp[]> = {
   swift:      [/print\s*\(([^)]*)\)/g],
   kotlin:     [/println\s*\(([^)]*)\)/g, /print\s*\(([^)]*)\)/g],
   sql:        [/SELECT\s+([^;]+?)(?:\s+FROM[^;]*)?;/gi],
+  rust:       [/println!\s*\(\s*(?:[^,]+,\s*)?([^)]*)\)/g],
+  go:         [/fmt\.Println\s*\(([^)]*)\)/g],
+  dart:       [/print\s*\(([^)]*)\)/g],
+  ruby:       [/print\s+(.+)$/gm, /puts\s+(.+)$/gm, /print\s*\(([^)]*)\)/g],
 };
 
 function evalArg(raw: string): string {
