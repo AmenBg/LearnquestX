@@ -189,7 +189,7 @@ export default function CodeLessonPage() {
             </div>
           </div>
           <div className="h-1 bg-muted">
-            <div className="h-full bg-gradient-xp transition-all" style={{ width: \`\${progressPct}%\` }} />
+            <div className="h-full bg-gradient-xp transition-all" style={{ width: `${progressPct}%` }} />
           </div>
         </div>
 
@@ -217,11 +217,11 @@ export default function CodeLessonPage() {
                         <button
                           onClick={() => goToLesson(l.index)}
                           disabled={locked}
-                          className={\`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs transition-colors \${
+                          className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs transition-colors ${
                             active ? 'bg-primary/15 text-primary font-semibold' :
                             locked ? 'text-muted-foreground/40 cursor-not-allowed' :
                             'text-foreground hover:bg-muted'
-                          }\`}
+                          }`}
                         >
                           {locked ? <Lock className="h-3 w-3 shrink-0" /> :
                             done ? <CheckCircle2 className="h-3 w-3 text-primary shrink-0" /> :
@@ -238,7 +238,7 @@ export default function CodeLessonPage() {
 
           <div className="flex-1 grid lg:grid-cols-2 overflow-hidden">
             {/* Left: Learning Content */}
-            <div className={\`flex flex-col border-r border-border overflow-y-auto custom-scrollbar bg-background \${activeTab === 'code' ? 'hidden lg:flex' : 'flex'}\`}>
+            <div className={`flex flex-col border-r border-border overflow-y-auto custom-scrollbar bg-background ${activeTab === 'code' ? 'hidden lg:flex' : 'flex'}`}>
               <div className="p-6 md:p-8 max-w-3xl mx-auto w-full space-y-8">
                 
                 {/* Intro Section */}
@@ -266,7 +266,7 @@ export default function CodeLessonPage() {
                     {language === 'ar' ? 'كيف يعمل؟' : language === 'fr' ? 'Comment ça marche?' : 'How it works'}
                   </h3>
                   <div className="prose prose-invert max-w-none text-foreground/80 leading-relaxed space-y-4">
-                    {lesson.theory.split('\\n\\n').map((para, i) => (
+                    {lesson.theory.split('\n\n').map((para, i) => (
                       <p key={i}>{para}</p>
                     ))}
                   </div>
@@ -389,7 +389,7 @@ export default function CodeLessonPage() {
                             : 'border-border hover:border-primary/40 hover:bg-muted/50 text-foreground';
                           return (
                             <button key={i} disabled={quizAnswer !== null} onClick={() => setQuizAnswer(i)}
-                              className={\`flex items-center gap-3 rounded-xl border bg-card p-3.5 text-left text-sm transition-all \${cls}\`}
+                              className={`flex items-center gap-3 rounded-xl border bg-card p-3.5 text-left text-sm transition-all ${cls}`}
                             >
                               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold">{String.fromCharCode(65 + i)}</span>
                               <span className="flex-1">{opt}</span>
@@ -431,7 +431,7 @@ export default function CodeLessonPage() {
                           Next Lesson <ArrowRight className="h-4 w-4" />
                         </button>
                       )}
-                      <Link to={\`/code/\${lang.id}\`} className="flex-1 min-w-[200px] flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-medium hover:bg-muted transition-colors">
+                      <Link to={`/code/${lang.id}`} className="flex-1 min-w-[200px] flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-medium hover:bg-muted transition-colors">
                         Back to Map
                       </Link>
                     </div>
@@ -443,18 +443,18 @@ export default function CodeLessonPage() {
             </div>
 
             {/* Right: Code Editor & Output */}
-            <div className={\`flex flex-col bg-[#0f0f13] relative \${activeTab === 'learn' ? 'hidden lg:flex' : 'flex'}\`}>
+            <div className={`flex flex-col bg-[#0f0f13] relative ${activeTab === 'learn' ? 'hidden lg:flex' : 'flex'}`}>
               {/* Mobile Tabs Header */}
               <div className="lg:hidden flex border-b border-border/20 bg-card p-2 gap-2">
                 <button 
                   onClick={() => setActiveTab('learn')}
-                  className={\`flex-1 py-2 text-xs font-bold rounded-lg transition-colors \${activeTab === 'learn' ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground'}\`}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${activeTab === 'learn' ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground'}`}
                 >
                   <BookOpen className="h-3 w-3 inline mr-1 mb-0.5" /> Learn
                 </button>
                 <button 
                   onClick={() => setActiveTab('code')}
-                  className={\`flex-1 py-2 text-xs font-bold rounded-lg transition-colors \${activeTab === 'code' ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground'}\`}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${activeTab === 'code' ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground'}`}
                 >
                   <Code2 className="h-3 w-3 inline mr-1 mb-0.5" /> Code
                 </button>
@@ -490,7 +490,7 @@ export default function CodeLessonPage() {
                       <Terminal className="h-3.5 w-3.5" /> Console Output
                     </span>
                     {runOutput || runError ? (
-                      <span className={\`px-2 py-0.5 rounded text-[10px] font-bold \${normalizeOutput(runOutput) === normalizeOutput(lesson.expectedOutput) ? 'bg-primary/20 text-primary' : 'bg-destructive/20 text-destructive'}\`}>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${normalizeOutput(runOutput) === normalizeOutput(lesson.expectedOutput) ? 'bg-primary/20 text-primary' : 'bg-destructive/20 text-destructive'}`}>
                         {normalizeOutput(runOutput) === normalizeOutput(lesson.expectedOutput) ? '✓ MATCH' : '✗ MISMATCH'}
                       </span>
                     ) : null}
