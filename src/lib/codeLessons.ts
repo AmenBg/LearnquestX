@@ -172,40 +172,40 @@ export function getLessons(langId: string, language: Language = 'en'): CodeLesso
       const b = 2 + (i % 7);
       
       // Challenge & Output calculation
-      let challenge = \`Write a program that uses \${topicInfo.name.toLowerCase()} to process \${a} and \${b}.\`;
+      let challenge = `Write a program that uses ${topicInfo.name.toLowerCase()} to process ${a} and ${b}.`;
       let expectedOutput = String(a + b); // Default fallback
       let solution = syntax(langId, 'print', String(a + b));
-      let exampleCode = syntax(langId, 'var', 'x', '10') + '\\n' + syntax(langId, 'print', 'x');
+      let exampleCode = syntax(langId, 'var', 'x', '10') + '\n' + syntax(langId, 'print', 'x');
 
       if (topicInfo.id === 'arithmetic') {
         const ops = ['+', '*', '-', '/'];
         const op = ops[iteration % 4];
-        challenge = \`Calculate and print the result of \${a} \${op} \${b}.\`;
+        challenge = `Calculate and print the result of ${a} ${op} ${b}.`;
         expectedOutput = op === '+' ? String(a+b) : op === '*' ? String(a*b) : op === '-' ? String(a-b) : String(Math.floor(a/b));
-        solution = syntax(langId, 'print', \`\${a} \${op} \${b}\`);
+        solution = syntax(langId, 'print', `${a} ${op} ${b}`);
       } else if (topicInfo.id === 'strings') {
         const words = ['Hello', 'World', 'Code', 'Quest', 'Hero', 'Magic', 'Epic', 'Loop'];
         const w = words[i % words.length];
-        challenge = \`Print the string "\${w}" exactly \${b} times, each on a new line.\`;
-        expectedOutput = Array(b).fill(w).join('\\n');
-        solution = Array(b).fill(syntax(langId, 'print', \`"\${w}"\`)).join('\\n');
+        challenge = `Print the string "${w}" exactly ${b} times, each on a new line.`;
+        expectedOutput = Array(b).fill(w).join('\n');
+        solution = Array(b).fill(syntax(langId, 'print', `"${w}"`)).join('\n');
       } else {
         // generic fallback
-        challenge = \`Output the number \${iteration + i}.\`;
+        challenge = `Output the number ${iteration + i}.`;
         expectedOutput = String(iteration + i);
         solution = syntax(langId, 'print', String(iteration + i));
       }
 
       // Localization adjustments (simulated since we can't bundle full i18n JSONs here)
-      const translatedTopic = language === 'ar' ? \`مفهوم \${topicInfo.name}\` : language === 'fr' ? \`Concept: \${topicInfo.name}\` : topicInfo.name;
-      const translatedIntro = language === 'ar' ? \`في هذا الدرس سنتعلم عن \${topicInfo.name}. \${topicInfo.desc}\` : language === 'fr' ? \`Dans cette leçon, nous apprenons \${topicInfo.name}. \${topicInfo.desc}\` : \`In this lesson, we learn about \${topicInfo.name}. \${topicInfo.desc}\`;
-      const translatedChallenge = language === 'ar' ? \`التحدي: اطبع النتيجة المطلوبة.\` : language === 'fr' ? \`Le défi: Affichez le résultat attendu.\` : challenge;
+      const translatedTopic = language === 'ar' ? `مفهوم ${topicInfo.name}` : language === 'fr' ? `Concept: ${topicInfo.name}` : topicInfo.name;
+      const translatedIntro = language === 'ar' ? `في هذا الدرس سنتعلم عن ${topicInfo.name}. ${topicInfo.desc}` : language === 'fr' ? `Dans cette leçon, nous apprenons ${topicInfo.name}. ${topicInfo.desc}` : `In this lesson, we learn about ${topicInfo.name}. ${topicInfo.desc}`;
+      const translatedChallenge = language === 'ar' ? `التحدي: اطبع النتيجة المطلوبة.` : language === 'fr' ? `Le défi: Affichez le résultat attendu.` : challenge;
 
       lessons.push({
         index: globalIndex,
         level: level.id,
         levelIndex: i + 1,
-        title: \`\${translatedTopic} \${iteration + 1}\`,
+        title: `${translatedTopic} ${iteration + 1}`,
         topic: translatedTopic,
         difficulty: difficulty as any,
         
