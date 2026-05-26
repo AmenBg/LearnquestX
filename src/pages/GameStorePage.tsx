@@ -33,11 +33,10 @@ export default function GameStorePage() {
     }
     setPurchasing(gameId);
     
-    // Use server-side RPC for atomic, validated purchase
+    // Use server-side RPC for atomic, validated purchase (price comes from server catalog)
     const { error } = await supabase.rpc('purchase_game_rpc', {
       p_game_id: gameId,
-      p_xp_cost: xpCost,
-    });
+    } as any);
 
     if (error) {
       toast.error(error.message?.includes('already owned') ? 'You already own this game!' : 'Failed to purchase');
