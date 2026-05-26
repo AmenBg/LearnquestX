@@ -47,6 +47,21 @@ export type Database = {
         }
         Relationships: []
       }
+      game_catalog: {
+        Row: {
+          game_id: string
+          xp_cost: number
+        }
+        Insert: {
+          game_id: string
+          xp_cost: number
+        }
+        Update: {
+          game_id?: string
+          xp_cost?: number
+        }
+        Relationships: []
+      }
       match_players: {
         Row: {
           answers: Json
@@ -104,6 +119,8 @@ export type Database = {
           updated_at: string
           user_id: string
           xp: number
+          xp_today: number
+          xp_today_date: string | null
         }
         Insert: {
           country?: string
@@ -120,6 +137,8 @@ export type Database = {
           updated_at?: string
           user_id: string
           xp?: number
+          xp_today?: number
+          xp_today_date?: string | null
         }
         Update: {
           country?: string
@@ -136,6 +155,8 @@ export type Database = {
           updated_at?: string
           user_id?: string
           xp?: number
+          xp_today?: number
+          xp_today_date?: string | null
         }
         Relationships: []
       }
@@ -268,10 +289,7 @@ export type Database = {
           xp: number
         }[]
       }
-      purchase_game_rpc: {
-        Args: { p_game_id: string; p_xp_cost: number }
-        Returns: undefined
-      }
+      purchase_game_rpc: { Args: { p_game_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
