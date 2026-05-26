@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { miniGames } from '@/lib/miniGames';
 import { useApp } from '@/contexts/AppContext';
+import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Trophy, RotateCcw, Timer } from 'lucide-react';
@@ -924,15 +925,34 @@ function getGameComponent(gameId: string): React.ComponentType<{ onFinish: (s: n
 export default function PlayGamePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { addXp } = useApp();
+  const { addXp, authUser } = useApp();
   const game = miniGames.find(g => g.id === id);
   const [finalScore, setFinalScore] = useState<number | null>(null);
   const [gameKey, setGameKey] = useState(0);
+  const [ownership, setOwnership] = useState<'checking' | 'owned' | 'denied'>('checking');
 
+  useEffect(() => {
+    if (!authUser || !id) return;
+    if (id === 'chess') { setOwnership('owned'); return; }
+    supabase
+      .from('purchased_games')
+      .select('id')
+      .eq('user_id', authUser.id)
+      .eq('game_id', id)
+      .maybeSingle()
+      .then(({ data }) => setOwnership(data ? 'owned' : 'denied'));
+  }, [authUser, id]);
+
+  if (!authUser) return <Navigate to="/auth" replace />;
   if (!game) return <div className="flex min-h-screen items-center justify-center text-foreground">Game not found</div>;
 
   // Chess redirect
   if (game.id === 'chess') { navigate('/chess'); return null; }
+
+  if (ownership === 'checking') {
+    return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Loading…</div>;
+  }
+  if (ownership === 'denied') return <Navigate to="/store" replace />;
 
   const handleFinish = async (score: number) => {
     setFinalScore(score);
