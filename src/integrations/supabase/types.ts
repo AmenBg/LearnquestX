@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievement_catalog: {
+        Row: {
+          achievement_id: string
+          min_level: number | null
+          min_streak: number | null
+          min_xp: number | null
+          xp_reward: number
+        }
+        Insert: {
+          achievement_id: string
+          min_level?: number | null
+          min_streak?: number | null
+          min_xp?: number | null
+          xp_reward?: number
+        }
+        Update: {
+          achievement_id?: string
+          min_level?: number | null
+          min_streak?: number | null
+          min_xp?: number | null
+          xp_reward?: number
+        }
+        Relationships: []
+      }
       exercise_history: {
         Row: {
           created_at: string
@@ -290,6 +314,10 @@ export type Database = {
         }[]
       }
       purchase_game_rpc: { Args: { p_game_id: string }; Returns: undefined }
+      unlock_achievement_rpc: {
+        Args: { p_achievement_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
