@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
+import PageSeo from '@/components/PageSeo';
 import { CODE_LANGUAGES, LESSONS_PER_LEVEL } from '@/lib/codeLessons';
 import { Code2, ArrowLeft } from 'lucide-react';
 
@@ -8,6 +9,11 @@ export default function CodeHomePage() {
   const totalLessons = LESSONS_PER_LEVEL * 4;
   return (
     <div className="min-h-screen bg-background">
+      <PageSeo
+        title="Code Academy — LearnQuest"
+        description="Master 14 programming languages with an in-browser IDE, line-by-line theory, and four difficulty tiers across 800 lessons per language."
+        path="/code"
+      />
       <Navbar />
       <div className="container mx-auto px-4 pt-24 pb-12">
         <Link to="/subjects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">

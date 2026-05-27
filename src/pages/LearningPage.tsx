@@ -256,6 +256,7 @@ export default function LearningPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto max-w-2xl px-4 pt-24 pb-12">
+        <h1 className="sr-only">Practice Session — {subject?.name}</h1>
         <div className="mb-6">
           <div className="mb-2 flex items-center justify-between text-sm">
             <span className="font-medium text-foreground">{subject?.icon} {subject?.name}</span>
