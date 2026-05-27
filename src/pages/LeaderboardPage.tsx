@@ -40,6 +40,11 @@ export default function LeaderboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageSeo
+        title="Leaderboard — LearnQuest"
+        description="See the top LearnQuest learners ranked by XP and level. Climb the global leaderboard one quiz at a time."
+        path="/leaderboard"
+      />
       <Navbar />
       <div className="container mx-auto max-w-2xl px-4 pt-24 pb-12">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
