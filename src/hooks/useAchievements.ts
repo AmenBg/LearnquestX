@@ -24,26 +24,13 @@ export function useAchievements(userId: string | undefined) {
     const achievement = achievements.find(a => a.id === achievementId);
     if (!achievement) return false;
 
-    const { error } = await supabase
-      .from('user_achievements')
-      .insert({ user_id: userId, achievement_id: achievementId });
-    if (error) return false;
+    // Server validates eligibility (milestones, duplicates) and awards XP atomically.
+    const { data, error } = await supabase.rpc('unlock_achievement_rpc' as any, {
+      p_achievement_id: achievementId,
+    });
+    if (error || data === false) return false;
 
     setUnlockedIds(prev => new Set([...prev, achievementId]));
-
-    // Award XP bonus
-    if (achievement.xpReward > 0) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('xp, level')
-        .eq('user_id', userId)
-        .single();
-      if (profile) {
-        const newXp = profile.xp + achievement.xpReward;
-        const newLevel = Math.floor(newXp / 400) + 1;
-        await supabase.from('profiles').update({ xp: newXp, level: newLevel }).eq('user_id', userId);
-      }
-    }
 
     toast.success(`🏆 Achievement Unlocked: ${achievement.name}!`, {
       description: `${achievement.description} (+${achievement.xpReward} XP)`,
