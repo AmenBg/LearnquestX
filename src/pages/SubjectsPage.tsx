@@ -2,6 +2,7 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { subjects } from '@/lib/gameData';
 import Navbar from '@/components/Navbar';
+import PageSeo from '@/components/PageSeo';
 import { motion } from 'framer-motion';
 import { ArrowRight, Code2 } from 'lucide-react';
 
@@ -22,6 +23,11 @@ export default function SubjectsPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageSeo
+        title="Subjects — LearnQuest"
+        description="Choose a subject to practice: Math, Science, Languages, History, and the Code Academy with 14 programming languages."
+        path="/subjects"
+      />
       <Navbar />
       <div className="container mx-auto px-4 pt-24 pb-12">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 text-center">

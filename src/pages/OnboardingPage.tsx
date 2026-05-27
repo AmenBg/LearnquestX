@@ -61,6 +61,7 @@ export default function OnboardingPage() {
         value={name}
         onChange={e => setName(e.target.value)}
         placeholder="Enter your name..."
+        aria-label="Your name"
         className="mb-4 w-full rounded-xl border border-border bg-muted px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
         maxLength={50}
       />

@@ -5,6 +5,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Zap, BookOpen, Trophy, Flame, ArrowRight, Gamepad2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import PageSeo from '@/components/PageSeo';
 
 export default function HomePage() {
   const { language, authUser } = useApp();
@@ -19,11 +20,16 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageSeo
+        title="LearnQuest — Level Up Your Learning"
+        description="AI-powered learning quest with XP, streaks, achievements, and 14 programming languages in a real in-browser IDE."
+        path="/"
+      />
       <Navbar />
-      
+
       <section className="relative flex min-h-screen items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0">
-          <img src={heroBg} alt="" className="h-full w-full object-cover opacity-30" />
+          <img src={heroBg} alt="" width={1920} height={1080} fetchPriority="high" decoding="async" className="h-full w-full object-cover opacity-30" />
           <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background" />
         </div>
 
