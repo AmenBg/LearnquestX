@@ -67,6 +67,7 @@ export default function AuthPage() {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="Your name"
+                aria-label="Your name"
                 className="w-full rounded-xl border border-border bg-muted pl-11 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                 required
               />
@@ -80,6 +81,8 @@ export default function AuthPage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="Email address"
+              aria-label="Email address"
+              autoComplete="email"
               className="w-full rounded-xl border border-border bg-muted pl-11 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
               required
             />
@@ -92,6 +95,8 @@ export default function AuthPage() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="Password"
+              aria-label="Password"
+              autoComplete={isLogin ? 'current-password' : 'new-password'}
               className="w-full rounded-xl border border-border bg-muted pl-11 pr-11 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
               required
               minLength={6}
@@ -99,6 +104,7 @@ export default function AuthPage() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
               className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground"
             >
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}

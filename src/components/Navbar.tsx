@@ -56,7 +56,7 @@ export default function Navbar() {
               <div className="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-semibold text-primary">
                 ⚡ {profile.xp.toLocaleString()} XP
               </div>
-              <Link to="/settings" className="rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-muted">
+              <Link to="/settings" aria-label="Settings" className="rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-muted">
                 <Settings className="h-4 w-4" />
               </Link>
             </>
@@ -67,7 +67,12 @@ export default function Navbar() {
           )}
         </div>
 
-        <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button
+          className="md:hidden text-foreground"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={mobileOpen}
+        >
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
