@@ -1,0 +1,19 @@
+# LearnQuest
+
+> AI-powered learning platform that turns studying into an adventure. Earn XP, build streaks, unlock games, and master 14 programming languages in a real in-browser IDE.
+
+LearnQuest generates fresh AI-powered quizzes across subjects like Math, Science, Languages, and more. Learners earn XP per correct answer, level up, maintain daily streaks, and spend XP on mini-games. The Code Academy teaches 14 programming languages (Python, JavaScript, TypeScript, Java, C++, C#, PHP, Swift, Kotlin, SQL, Rust, Go, Dart, Ruby) across four difficulty tiers with line-by-line theory and a built-in editor.
+
+## Pages
+
+- [Home](/): Product overview and entry point.
+- [Subjects](/subjects): Browse learning subjects including the Code Academy.
+- [Code Academy](/code): 14 programming languages with empty-editor lessons.
+- [Leaderboard](/leaderboard): Global XP rankings.
+- [Sign in](/auth): Account creation and login.
+
+## Optional
+
+- [Dashboard](/dashboard): Authenticated learner home (requires sign in).
+- [Achievements](/achievements): Milestone badges (requires sign in).
+- [Game Store](/store): Spend XP to unlock mini-games (requires sign in).
