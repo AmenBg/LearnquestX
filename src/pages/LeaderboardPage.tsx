@@ -3,6 +3,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
+import PageSeo from '@/components/PageSeo';
 import { motion } from 'framer-motion';
 
 interface LeaderboardEntry {
