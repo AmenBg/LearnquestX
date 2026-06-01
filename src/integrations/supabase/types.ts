@@ -313,6 +313,18 @@ export type Database = {
           xp: number
         }[]
       }
+      get_match_opponents: {
+        Args: { p_match_id: string }
+        Returns: {
+          finished: boolean
+          id: string
+          joined_at: string
+          match_id: string
+          player_name: string
+          score: number
+          user_id: string
+        }[]
+      }
       purchase_game_rpc: { Args: { p_game_id: string }; Returns: undefined }
       unlock_achievement_rpc: {
         Args: { p_achievement_id: string }
