@@ -119,12 +119,9 @@ export default function MultiplayerPage() {
       setQuestions(getFallback());
     }
 
-    // Get opponent name
-    const { data: players } = await supabase
-      .from('match_players')
-      .select('player_name, user_id')
-      .eq('match_id', mId);
-    const opp = players?.find(p => p.user_id !== authUser!.id);
+    // Get opponent name via secure RPC (excludes answers)
+    const { data: players } = await supabase.rpc('get_match_opponents', { p_match_id: mId });
+    const opp = (players as any[] | null)?.find(p => p.user_id !== authUser!.id);
     if (opp) setOpponentName(opp.player_name);
 
     setPhase('playing');
