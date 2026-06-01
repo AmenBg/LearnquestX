@@ -300,7 +300,44 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      match_opponents: {
+        Row: {
+          finished: boolean | null
+          id: string | null
+          joined_at: string | null
+          match_id: string | null
+          player_name: string | null
+          score: number | null
+          user_id: string | null
+        }
+        Insert: {
+          finished?: boolean | null
+          id?: string | null
+          joined_at?: string | null
+          match_id?: string | null
+          player_name?: string | null
+          score?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          finished?: boolean | null
+          id?: string | null
+          joined_at?: string | null
+          match_id?: string | null
+          player_name?: string | null
+          score?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_players_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_xp_rpc: { Args: { amount: number }; Returns: undefined }
