@@ -300,44 +300,7 @@ export type Database = {
       }
     }
     Views: {
-      match_opponents: {
-        Row: {
-          finished: boolean | null
-          id: string | null
-          joined_at: string | null
-          match_id: string | null
-          player_name: string | null
-          score: number | null
-          user_id: string | null
-        }
-        Insert: {
-          finished?: boolean | null
-          id?: string | null
-          joined_at?: string | null
-          match_id?: string | null
-          player_name?: string | null
-          score?: number | null
-          user_id?: string | null
-        }
-        Update: {
-          finished?: boolean | null
-          id?: string | null
-          joined_at?: string | null
-          match_id?: string | null
-          player_name?: string | null
-          score?: number | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "match_players_match_id_fkey"
-            columns: ["match_id"]
-            isOneToOne: false
-            referencedRelation: "quiz_matches"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       add_xp_rpc: { Args: { amount: number }; Returns: undefined }
@@ -348,6 +311,18 @@ export type Database = {
           name: string
           user_id: string
           xp: number
+        }[]
+      }
+      get_match_opponents: {
+        Args: { p_match_id: string }
+        Returns: {
+          finished: boolean
+          id: string
+          joined_at: string
+          match_id: string
+          player_name: string
+          score: number
+          user_id: string
         }[]
       }
       purchase_game_rpc: { Args: { p_game_id: string }; Returns: undefined }
