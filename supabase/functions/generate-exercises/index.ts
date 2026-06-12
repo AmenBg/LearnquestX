@@ -41,6 +41,13 @@ serve(async (req) => {
     const term = typeof body.term === "string" ? body.term.slice(0, 20) : "";
     const language = typeof body.language === "string" ? body.language.slice(0, 5) : "en";
     const count = typeof body.count === "number" && body.count >= 1 && body.count <= 20 ? body.count : 5;
+    // New: adaptive + variety params
+    const difficultyTarget = ["easy", "mixed", "hard"].includes(body.difficultyTarget) ? body.difficultyTarget : "mixed";
+    const writtenRatio = typeof body.writtenRatio === "number" && body.writtenRatio >= 0 && body.writtenRatio <= 1 ? body.writtenRatio : 0.2;
+    const recentQuestions: string[] = Array.isArray(body.recentQuestions)
+      ? body.recentQuestions.filter((s: unknown) => typeof s === "string").slice(0, 40).map((s: string) => s.slice(0, 200))
+      : [];
+    const variationSeed = typeof body.variationSeed === "string" ? body.variationSeed.slice(0, 32) : Math.random().toString(36).slice(2, 10);
 
     if (!subject) {
       return new Response(JSON.stringify({ error: "Missing required field: subject" }), {
@@ -56,13 +63,23 @@ serve(async (req) => {
       en: 'English', ar: 'Arabic', fr: 'French', es: 'Spanish', de: 'German'
     };
 
-    const difficultyInstructions = count === 5
-      ? `- Question 1: Easy difficulty
-- Question 2: Medium difficulty
-- Question 3: Medium+ difficulty
-- Question 4: Hard difficulty
-- Question 5: Very Hard difficulty`
-      : `- Difficulty should progress: first questions easy, last questions challenging`;
+    let difficultyInstructions = "";
+    if (difficultyTarget === "easy") {
+      difficultyInstructions = `- The user is struggling. Make most questions EASY, with at most one MEDIUM. Build confidence with clear, fundamental questions.`;
+    } else if (difficultyTarget === "hard") {
+      difficultyInstructions = `- The user is performing very well. Make most questions HARD or VERY HARD with one MEDIUM. Push their understanding with multi-step reasoning.`;
+    } else {
+      difficultyInstructions = `- Balanced mix: progress from easy → medium → hard across the set.`;
+    }
+
+    const writtenCount = Math.round(count * writtenRatio);
+    const writtenInstr = writtenCount > 0
+      ? `- Make EXACTLY ${writtenCount} of the ${count} questions written-answer (type "written"): short factual answers (1-3 words), definitions, vocabulary, or simple calculations. The rest must be multiple-choice (type "mcq"). For written questions, provide "accepted_answers": an array of 2-6 acceptable lowercase string variations (synonyms, with/without articles, common spellings). Do NOT include options or correct for written items.`
+      : `- All questions must be multiple-choice (type "mcq").`;
+
+    const avoidInstr = recentQuestions.length > 0
+      ? `- VARIETY CRITICAL: The user has recently seen these questions — generate completely DIFFERENT questions covering different sub-topics, numbers, and concepts. Do not paraphrase them. Avoided:\n${recentQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}`
+      : `- Generate fresh, varied questions across different sub-topics.`;
 
     const systemPrompt = `You are an expert educational content generator. Generate exactly ${count} quiz questions for students.
 
@@ -73,20 +90,20 @@ Context:
 - Grade: ${grade || '7'}
 - Current term: ${term || 'general'}
 - Language: ${langNames[language] || 'English'}
+- Variation seed (use to ensure novelty): ${variationSeed}
 
 Rules:
 - Questions must be appropriate for the student's grade level
 ${difficultyInstructions}
+${writtenInstr}
+${avoidInstr}
 - All text must be in ${langNames[language] || 'English'}
-- Each question must have exactly 4 options
-- Questions should be unique and varied
-- CRITICAL: The "correct" field must be the 0-based index of the correct answer in the "options" array
-- CRITICAL: Double-check that options[correct] is actually the right answer
-- For math questions: compute the result FIRST, then set the correct index to match
-- Example: If the question is "What is 2 × 5?", options might be ["8","10","12","15"], correct must be 1 (because options[1] = "10")
-- CRITICAL: Every question must have exactly ONE correct answer that is VERIFIABLY TRUE
-- Never generate a question where the correct answer is missing from the options
-- For science/history/geography: ensure facts are accurate and well-established`;
+- Each MCQ must have exactly 4 distinct options
+- CRITICAL: For MCQ, "correct" is the 0-based index in "options"; double-check options[correct] is the right answer
+- For math: compute the result FIRST, then set indices
+- Every question must have ONE verifiably correct answer
+- Cover varied sub-topics within the subject; do not cluster the same concept
+- Each item must include a "difficulty" field: "easy" | "medium" | "hard" | "very_hard"`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -98,14 +115,14 @@ ${difficultyInstructions}
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Generate ${count} quiz questions for ${subject} (grade ${grade || '7'}).` },
+          { role: "user", content: `Generate ${count} fresh quiz questions for ${subject} (grade ${grade || '7'}). Seed: ${variationSeed}.` },
         ],
         tools: [
           {
             type: "function",
             function: {
               name: "generate_questions",
-              description: "Generate quiz questions with options and correct answers",
+              description: "Generate quiz questions",
               parameters: {
                 type: "object",
                 properties: {
@@ -114,12 +131,15 @@ ${difficultyInstructions}
                     items: {
                       type: "object",
                       properties: {
-                        question: { type: "string", description: "The question text" },
-                        options: { type: "array", items: { type: "string" }, description: "Exactly 4 answer options" },
-                        correct: { type: "number", description: "Index (0-3) of the correct answer" },
-                        explanation: { type: "string", description: "Brief explanation of the correct answer" },
+                        type: { type: "string", enum: ["mcq", "written"] },
+                        question: { type: "string" },
+                        options: { type: "array", items: { type: "string" }, description: "MCQ only: exactly 4 options" },
+                        correct: { type: "number", description: "MCQ only: 0-3 index" },
+                        accepted_answers: { type: "array", items: { type: "string" }, description: "Written only: acceptable answer variations (lowercase)" },
+                        explanation: { type: "string" },
+                        difficulty: { type: "string", enum: ["easy", "medium", "hard", "very_hard"] },
                       },
-                      required: ["question", "options", "correct", "explanation"],
+                      required: ["type", "question", "explanation", "difficulty"],
                       additionalProperties: false,
                     },
                   },
@@ -159,28 +179,35 @@ ${difficultyInstructions}
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     if (toolCall?.function?.arguments) {
       const parsed = JSON.parse(toolCall.function.arguments);
-      
+
       if (parsed.questions && Array.isArray(parsed.questions)) {
         const validated = parsed.questions.filter((q: any) => {
-          if (!q.question || !Array.isArray(q.options) || q.options.length !== 4) return false;
-          if (typeof q.correct !== 'number' || q.correct < 0 || q.correct > 3) return false;
-          if (!q.explanation) return false;
-          if (!q.options[q.correct] || q.options[q.correct].trim() === '') return false;
-          return true;
+          if (!q.question || !q.explanation || !q.difficulty) return false;
+          if (q.type === "mcq") {
+            if (!Array.isArray(q.options) || q.options.length !== 4) return false;
+            if (typeof q.correct !== "number" || q.correct < 0 || q.correct > 3) return false;
+            if (!q.options[q.correct] || q.options[q.correct].trim() === "") return false;
+            return true;
+          }
+          if (q.type === "written") {
+            if (!Array.isArray(q.accepted_answers) || q.accepted_answers.length === 0) return false;
+            return true;
+          }
+          return false;
         });
-        
+
         if (validated.length === 0) {
           return new Response(JSON.stringify({ error: "All generated questions failed validation" }), {
             status: 500,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        
+
         return new Response(JSON.stringify({ questions: validated }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      
+
       return new Response(JSON.stringify(parsed), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
