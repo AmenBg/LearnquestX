@@ -1,0 +1,2 @@
+ALTER TABLE public.exercise_history ADD COLUMN IF NOT EXISTS question_text TEXT;
+CREATE INDEX IF NOT EXISTS idx_exercise_history_user_subject_created ON public.exercise_history(user_id, subject_id, created_at DESC);

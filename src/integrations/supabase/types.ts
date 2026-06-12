@@ -44,6 +44,7 @@ export type Database = {
           id: string
           lesson_id: string
           question_hash: string
+          question_text: string | null
           subject_id: string
           user_id: string
           was_correct: boolean
@@ -54,6 +55,7 @@ export type Database = {
           id?: string
           lesson_id: string
           question_hash: string
+          question_text?: string | null
           subject_id: string
           user_id: string
           was_correct: boolean
@@ -64,6 +66,7 @@ export type Database = {
           id?: string
           lesson_id?: string
           question_hash?: string
+          question_text?: string | null
           subject_id?: string
           user_id?: string
           was_correct?: boolean
