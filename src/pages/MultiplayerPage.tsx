@@ -342,10 +342,17 @@ export default function MultiplayerPage() {
               {q.options.map((opt, i) => {
                 let style = 'border-border hover:border-primary/40 hover:bg-muted';
                 if (selected !== null) {
-                  if (i === q.correct) style = 'border-green-500 bg-green-500/10 text-green-400';
-                  else if (i === selected) style = 'border-destructive bg-destructive/10 text-destructive';
-                  else style = 'border-border opacity-50';
+                  if (i === selected) {
+                    style = lastAnswerCorrect
+                      ? 'border-green-500 bg-green-500/10 text-green-400'
+                      : lastAnswerCorrect === false
+                        ? 'border-destructive bg-destructive/10 text-destructive'
+                        : 'border-primary bg-primary/10';
+                  } else {
+                    style = 'border-border opacity-50';
+                  }
                 }
+
                 return (
                   <motion.button key={i} onClick={() => handleAnswer(i)} disabled={selected !== null} whileTap={{ scale: 0.98 }}
                     className={`w-full rounded-xl border p-4 text-left text-sm font-medium text-foreground transition-all ${style}`}
