@@ -176,18 +176,20 @@ export default function MultiplayerPage() {
   const handleAnswer = async (idx: number) => {
     if (selected !== null) return;
     setSelected(idx);
-    const q = questions[currentQ];
-    const isCorrect = idx === q.correct;
+
+    // Server validates the answer and updates the score atomically.
+    // The client no longer knows the correct answer, so no client-side scoring.
+    let isCorrect = false;
+    if (matchId && idx >= 0) {
+      const { data, error } = await supabase.rpc('submit_match_answer', {
+        p_match_id: matchId,
+        p_question_index: currentQ,
+        p_answer_index: idx,
+      });
+      if (!error) isCorrect = !!data;
+    }
 
     if (isCorrect) setMyScore(prev => prev + 1);
-
-    // Update score in DB
-    if (matchId) {
-      await supabase.from('match_players')
-        .update({ score: isCorrect ? myScore + 1 : myScore })
-        .eq('match_id', matchId)
-        .eq('user_id', authUser!.id);
-    }
 
     setTimeout(() => {
       if (currentQ < questions.length - 1) {
@@ -199,6 +201,7 @@ export default function MultiplayerPage() {
       }
     }, 1500);
   };
+
 
   const finishMatch = async (finalScore: number) => {
     setPhase('result');
