@@ -99,24 +99,37 @@ export default function MultiplayerPage() {
 
   const loadQuestions = async (mId: string) => {
     try {
-      const { data } = await supabase.functions.invoke('generate-exercises', {
-        body: {
-          subject: 'Mixed (Math, Science, General Knowledge)',
-          country: profile?.country || 'TN',
-          educationLevel: profile?.education_level || 'middle_school',
-          grade: profile?.grade || '7',
-          term: profile?.current_term || 'term_1',
-          language: profile?.preferred_language || 'en',
-          count: 6,
-        },
-      });
-      const qs = data?.questions || getFallback();
-      setQuestions(qs);
+      // 1) Try to fetch sanitized questions if another player already populated them.
+      const { data: existing } = await supabase.rpc('get_match_questions', { p_match_id: mId });
 
-      // Store questions in match
-      await supabase.from('quiz_matches').update({ question_data: qs }).eq('id', mId);
+      if (existing && Array.isArray(existing) && existing.length > 0) {
+        setQuestions(existing as unknown as Question[]);
+      } else {
+        // 2) Otherwise, generate them and persist to the private table (server keeps the answer keys).
+        const { data } = await supabase.functions.invoke('generate-exercises', {
+          body: {
+            subject: 'Mixed (Math, Science, General Knowledge)',
+            country: profile?.country || 'TN',
+            educationLevel: profile?.education_level || 'middle_school',
+            grade: profile?.grade || '7',
+            term: profile?.current_term || 'term_1',
+            language: profile?.preferred_language || 'en',
+            count: 6,
+          },
+        });
+        const qs = (data?.questions || getFallback()) as Question[];
+
+        // Write-once insert; ignore conflict if the opponent beat us to it.
+        await supabase
+          .from('quiz_match_questions')
+          .insert({ match_id: mId, questions: qs as any });
+
+        // Re-fetch via RPC so we always render the sanitized (answer-stripped) version.
+        const { data: safe } = await supabase.rpc('get_match_questions', { p_match_id: mId });
+        setQuestions((safe as unknown as Question[]) || qs.map(stripAnswer));
+      }
     } catch {
-      setQuestions(getFallback());
+      setQuestions(getFallback().map(stripAnswer));
     }
 
     // Get opponent name via secure RPC (excludes answers)
@@ -126,6 +139,7 @@ export default function MultiplayerPage() {
 
     setPhase('playing');
   };
+
 
   const subscribeToMatch = (mId: string) => {
     const channel = supabase
