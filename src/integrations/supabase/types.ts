@@ -211,6 +211,32 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_match_questions: {
+        Row: {
+          created_at: string
+          match_id: string
+          questions: Json
+        }
+        Insert: {
+          created_at?: string
+          match_id: string
+          questions: Json
+        }
+        Update: {
+          created_at?: string
+          match_id?: string
+          questions?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_match_questions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "quiz_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quiz_matches: {
         Row: {
           created_at: string
@@ -328,7 +354,16 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_match_questions: { Args: { p_match_id: string }; Returns: Json }
       purchase_game_rpc: { Args: { p_game_id: string }; Returns: undefined }
+      submit_match_answer: {
+        Args: {
+          p_answer_index: number
+          p_match_id: string
+          p_question_index: number
+        }
+        Returns: boolean
+      }
       unlock_achievement_rpc: {
         Args: { p_achievement_id: string }
         Returns: boolean
