@@ -178,9 +178,8 @@ export default function MultiplayerPage() {
   const handleAnswer = async (idx: number) => {
     if (selected !== null) return;
     setSelected(idx);
+    setLastAnswerCorrect(null);
 
-    // Server validates the answer and updates the score atomically.
-    // The client no longer knows the correct answer, so no client-side scoring.
     let isCorrect = false;
     if (matchId && idx >= 0) {
       const { data, error } = await supabase.rpc('submit_match_answer', {
@@ -191,18 +190,21 @@ export default function MultiplayerPage() {
       if (!error) isCorrect = !!data;
     }
 
+    setLastAnswerCorrect(isCorrect);
     if (isCorrect) setMyScore(prev => prev + 1);
 
     setTimeout(() => {
       if (currentQ < questions.length - 1) {
         setCurrentQ(prev => prev + 1);
         setSelected(null);
+        setLastAnswerCorrect(null);
         setTimeLeft(15);
       } else {
         finishMatch(isCorrect ? myScore + 1 : myScore);
       }
     }, 1500);
   };
+
 
 
   const finishMatch = async (finalScore: number) => {
