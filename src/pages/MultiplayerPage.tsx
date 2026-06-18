@@ -29,6 +29,8 @@ export default function MultiplayerPage() {
   const [opponentName, setOpponentName] = useState('');
   const [timeLeft, setTimeLeft] = useState(15);
   const [matchType, setMatchType] = useState<'1v1' | 'group'>('1v1');
+  const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
+
 
   // Timer
   useEffect(() => {
