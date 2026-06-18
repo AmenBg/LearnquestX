@@ -29,6 +29,8 @@ export default function MultiplayerPage() {
   const [opponentName, setOpponentName] = useState('');
   const [timeLeft, setTimeLeft] = useState(15);
   const [matchType, setMatchType] = useState<'1v1' | 'group'>('1v1');
+  const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
+
 
   // Timer
   useEffect(() => {
@@ -99,24 +101,37 @@ export default function MultiplayerPage() {
 
   const loadQuestions = async (mId: string) => {
     try {
-      const { data } = await supabase.functions.invoke('generate-exercises', {
-        body: {
-          subject: 'Mixed (Math, Science, General Knowledge)',
-          country: profile?.country || 'TN',
-          educationLevel: profile?.education_level || 'middle_school',
-          grade: profile?.grade || '7',
-          term: profile?.current_term || 'term_1',
-          language: profile?.preferred_language || 'en',
-          count: 6,
-        },
-      });
-      const qs = data?.questions || getFallback();
-      setQuestions(qs);
+      // 1) Try to fetch sanitized questions if another player already populated them.
+      const { data: existing } = await supabase.rpc('get_match_questions', { p_match_id: mId });
 
-      // Store questions in match
-      await supabase.from('quiz_matches').update({ question_data: qs }).eq('id', mId);
+      if (existing && Array.isArray(existing) && existing.length > 0) {
+        setQuestions(existing as unknown as Question[]);
+      } else {
+        // 2) Otherwise, generate them and persist to the private table (server keeps the answer keys).
+        const { data } = await supabase.functions.invoke('generate-exercises', {
+          body: {
+            subject: 'Mixed (Math, Science, General Knowledge)',
+            country: profile?.country || 'TN',
+            educationLevel: profile?.education_level || 'middle_school',
+            grade: profile?.grade || '7',
+            term: profile?.current_term || 'term_1',
+            language: profile?.preferred_language || 'en',
+            count: 6,
+          },
+        });
+        const qs = (data?.questions || getFallback()) as Question[];
+
+        // Write-once insert; ignore conflict if the opponent beat us to it.
+        await supabase
+          .from('quiz_match_questions')
+          .insert({ match_id: mId, questions: qs as any });
+
+        // Re-fetch via RPC so we always render the sanitized (answer-stripped) version.
+        const { data: safe } = await supabase.rpc('get_match_questions', { p_match_id: mId });
+        setQuestions((safe as unknown as Question[]) || qs.map(stripAnswer));
+      }
     } catch {
-      setQuestions(getFallback());
+      setQuestions(getFallback().map(stripAnswer));
     }
 
     // Get opponent name via secure RPC (excludes answers)
@@ -126,6 +141,7 @@ export default function MultiplayerPage() {
 
     setPhase('playing');
   };
+
 
   const subscribeToMatch = (mId: string) => {
     const channel = supabase
@@ -162,29 +178,34 @@ export default function MultiplayerPage() {
   const handleAnswer = async (idx: number) => {
     if (selected !== null) return;
     setSelected(idx);
-    const q = questions[currentQ];
-    const isCorrect = idx === q.correct;
+    setLastAnswerCorrect(null);
 
-    if (isCorrect) setMyScore(prev => prev + 1);
-
-    // Update score in DB
-    if (matchId) {
-      await supabase.from('match_players')
-        .update({ score: isCorrect ? myScore + 1 : myScore })
-        .eq('match_id', matchId)
-        .eq('user_id', authUser!.id);
+    let isCorrect = false;
+    if (matchId && idx >= 0) {
+      const { data, error } = await supabase.rpc('submit_match_answer', {
+        p_match_id: matchId,
+        p_question_index: currentQ,
+        p_answer_index: idx,
+      });
+      if (!error) isCorrect = !!data;
     }
+
+    setLastAnswerCorrect(isCorrect);
+    if (isCorrect) setMyScore(prev => prev + 1);
 
     setTimeout(() => {
       if (currentQ < questions.length - 1) {
         setCurrentQ(prev => prev + 1);
         setSelected(null);
+        setLastAnswerCorrect(null);
         setTimeLeft(15);
       } else {
         finishMatch(isCorrect ? myScore + 1 : myScore);
       }
     }, 1500);
   };
+
+
 
   const finishMatch = async (finalScore: number) => {
     setPhase('result');
@@ -321,10 +342,17 @@ export default function MultiplayerPage() {
               {q.options.map((opt, i) => {
                 let style = 'border-border hover:border-primary/40 hover:bg-muted';
                 if (selected !== null) {
-                  if (i === q.correct) style = 'border-green-500 bg-green-500/10 text-green-400';
-                  else if (i === selected) style = 'border-destructive bg-destructive/10 text-destructive';
-                  else style = 'border-border opacity-50';
+                  if (i === selected) {
+                    style = lastAnswerCorrect
+                      ? 'border-green-500 bg-green-500/10 text-green-400'
+                      : lastAnswerCorrect === false
+                        ? 'border-destructive bg-destructive/10 text-destructive'
+                        : 'border-primary bg-primary/10';
+                  } else {
+                    style = 'border-border opacity-50';
+                  }
                 }
+
                 return (
                   <motion.button key={i} onClick={() => handleAnswer(i)} disabled={selected !== null} whileTap={{ scale: 0.98 }}
                     className={`w-full rounded-xl border p-4 text-left text-sm font-medium text-foreground transition-all ${style}`}
@@ -341,6 +369,13 @@ export default function MultiplayerPage() {
     </div>
   );
 }
+
+function stripAnswer(q: Question): Question {
+  // Render-safe copy of a question without the answer key.
+  const { correct: _c, explanation: _e, ...rest } = q as any;
+  return { ...(rest as Question), correct: -1 } as Question;
+}
+
 
 function getFallback(): Question[] {
   return [
