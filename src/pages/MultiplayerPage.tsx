@@ -356,6 +356,13 @@ export default function MultiplayerPage() {
   );
 }
 
+function stripAnswer(q: Question): Question {
+  // Render-safe copy of a question without the answer key.
+  const { correct: _c, explanation: _e, ...rest } = q as any;
+  return { ...(rest as Question), correct: -1 } as Question;
+}
+
+
 function getFallback(): Question[] {
   return [
     { question: 'What is 9 × 9?', options: ['72', '81', '90', '63'], correct: 1, explanation: '9 × 9 = 81' },
