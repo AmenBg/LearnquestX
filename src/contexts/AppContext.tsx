@@ -43,12 +43,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [profile?.preferred_language]);
 
-  // Check onboarding status — user is onboarded if they have a custom name
+  // Onboarding: every account collects a name at signup, so a profile means onboarded.
   useEffect(() => {
-    if (profile && profile.name && profile.name !== 'Player') {
-      setIsOnboarded(true);
-    }
+    if (profile) setIsOnboarded(true);
   }, [profile]);
+
 
   return (
     <AppContext.Provider value={{
