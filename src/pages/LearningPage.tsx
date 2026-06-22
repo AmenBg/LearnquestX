@@ -19,7 +19,8 @@ interface GeneratedQuestion {
   difficulty: Difficulty;
 }
 
-const DIFF_XP: Record<Difficulty, number> = { easy: 10, medium: 18, hard: 28, very_hard: 40 };
+// Economy rebalance: easy -20%, medium -11%, hard unchanged, very_hard unchanged.
+const DIFF_XP: Record<Difficulty, number> = { easy: 8, medium: 16, hard: 28, very_hard: 40 };
 const DIFF_LABEL: Record<Difficulty, string> = { easy: 'Easy', medium: 'Medium', hard: 'Hard', very_hard: 'Very Hard' };
 const PASS_THRESHOLD = 0.6;
 
