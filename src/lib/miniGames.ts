@@ -4,8 +4,12 @@ export interface MiniGame {
   description: string;
   icon: string;
   xpCost: number;
-  category: 'math' | 'logic' | 'memory' | 'speed' | 'word' | 'strategy' | 'chess';
+  category: 'math' | 'logic' | 'memory' | 'speed' | 'word' | 'strategy' | 'chess' | '3d';
   color: string;
+  /** Optional secondary color used to render colorful gradient cards in the store. */
+  color2?: string;
+  /** Mark games rendered with WebGL/Three.js so the UI can badge them. */
+  is3D?: boolean;
 }
 
 // Economy rebalance: prices increased ~60% to make unlocks feel earned.
