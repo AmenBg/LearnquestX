@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Trophy, RotateCcw, Timer } from 'lucide-react';
+import { CubeRunner3D, OrbitShooter3D, ColorCubeMatch3D } from '@/components/games/Game3D';
 
 /* ─── MATH-TYPE GAMES ─── */
 function MathGame({ onFinish, variant }: { onFinish: (s: number) => void; variant: string }) {
@@ -918,6 +919,11 @@ function getGameComponent(gameId: string): React.ComponentType<{ onFinish: (s: n
   if (['code-breaker', 'puzzle-solver', 'puzzle-master', 'puzzle-blocks', 'time-attack', 'pattern-finder'].includes(gameId)) return LogicSwitchGame;
   if (['sudoku'].includes(gameId)) return SequenceGame;
   if (['strategy-tower'].includes(gameId)) return BalanceGame;
+
+  // 3D games (Three.js / R3F)
+  if (gameId === 'cube-runner-3d') return CubeRunner3D;
+  if (gameId === 'orbit-shooter-3d') return OrbitShooter3D;
+  if (gameId === 'color-cube-match-3d') return ColorCubeMatch3D;
 
   return null;
 }
