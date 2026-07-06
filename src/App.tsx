@@ -24,6 +24,7 @@ import CodeHomePage from "./pages/CodeHomePage";
 import CodeLevelPage from "./pages/CodeLevelPage";
 import CodeLessonPage from "./pages/CodeLessonPage";
 import NotFound from "./pages/NotFound";
+import OAuthConsentPage from "./pages/OAuthConsentPage";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/code" element={<CodeHomePage />} />
               <Route path="/code/:lang" element={<CodeLevelPage />} />
               <Route path="/code/:lang/:level" element={<CodeLessonPage />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsentPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
