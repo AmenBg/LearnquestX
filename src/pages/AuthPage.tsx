@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Mail, Lock, User, ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -41,6 +41,11 @@ const SIGNUP_STAGES = [
 export default function AuthPage() {
   const { signUp, signIn, authUser } = useApp();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const rawNext = searchParams.get('next');
+  // Only allow same-origin relative paths as redirect targets.
+  const nextPath = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : null;
+  const redirectTarget = nextPath ?? '/dashboard';
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -49,10 +54,13 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState(0);
 
-  // If already signed in, jump to dashboard
+  // If already signed in, go to the intended destination (or dashboard).
   useEffect(() => {
-    if (authUser) navigate('/dashboard', { replace: true });
-  }, [authUser, navigate]);
+    if (authUser) {
+      if (nextPath) window.location.href = nextPath;
+      else navigate('/dashboard', { replace: true });
+    }
+  }, [authUser, navigate, nextPath]);
 
   // Cycle loading stages during signup
   useEffect(() => {
@@ -93,11 +101,11 @@ export default function AuthPage() {
         const { error } = await signIn(email.trim(), password);
         if (error) { toast.error(friendlyError(error.message)); return; }
         toast.success('Welcome back!');
-        navigate('/dashboard', { replace: true });
+        if (nextPath) window.location.href = nextPath;
+        else navigate(redirectTarget, { replace: true });
       } else {
         const { data, error } = await signUp(email.trim(), password, name.trim());
         if (error) { toast.error(friendlyError(error.message)); return; }
-        // Auto sign-in: if session wasn't returned (e.g. email confirmation), try password sign in.
         if (!data?.session) {
           const { error: signInErr } = await signIn(email.trim(), password);
           if (signInErr) {
@@ -107,7 +115,8 @@ export default function AuthPage() {
           }
         }
         toast.success('Welcome to LearnQuest! 🚀');
-        navigate('/dashboard', { replace: true });
+        if (nextPath) window.location.href = nextPath;
+        else navigate(redirectTarget, { replace: true });
       }
     } catch (err: any) {
       toast.error(friendlyError(err?.message ?? ''));
