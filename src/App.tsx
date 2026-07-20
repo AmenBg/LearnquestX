@@ -14,11 +14,9 @@ import ProfilePage from "./pages/ProfilePage";
 import OnboardingPage from "./pages/OnboardingPage";
 import AuthPage from "./pages/AuthPage";
 import GameStorePage from "./pages/GameStorePage";
-import PlayGamePage from "./pages/PlayGamePage";
-import ChessPage from "./pages/ChessPage";
+import KingdomPage from "./pages/KingdomPage";
 import SettingsPage from "./pages/SettingsPage";
 import AchievementsPage from "./pages/AchievementsPage";
-import AIOpponentPage from "./pages/AIOpponentPage";
 import MultiplayerPage from "./pages/MultiplayerPage";
 import CodeHomePage from "./pages/CodeHomePage";
 import CodeLevelPage from "./pages/CodeLevelPage";
@@ -46,11 +44,10 @@ const App = () => (
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/store" element={<GameStorePage />} />
-              <Route path="/play/:id" element={<PlayGamePage />} />
-              <Route path="/chess" element={<ChessPage />} />
+              <Route path="/kingdom" element={<KingdomPage />} />
+              <Route path="/play/kingdom" element={<KingdomPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/achievements" element={<AchievementsPage />} />
-              <Route path="/ai-opponent" element={<AIOpponentPage />} />
               <Route path="/multiplayer" element={<MultiplayerPage />} />
               <Route path="/code" element={<CodeHomePage />} />
               <Route path="/code/:lang" element={<CodeLevelPage />} />
