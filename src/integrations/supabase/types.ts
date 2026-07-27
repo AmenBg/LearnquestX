@@ -89,6 +89,75 @@ export type Database = {
         }
         Relationships: []
       }
+      kingdom_states: {
+        Row: {
+          archer_count: number
+          archery_level: number
+          barracks_level: number
+          battle_log: Json
+          catapult_count: number
+          created_at: string
+          knight_count: number
+          last_player_attack: string | null
+          last_raid_check: string
+          losses: number
+          militia_count: number
+          scout_target: Json | null
+          scouted_at: string | null
+          swordsman_count: number
+          town_hall_level: number
+          updated_at: string
+          user_id: string
+          wall_level: number
+          watchtower_level: number
+          wins: number
+        }
+        Insert: {
+          archer_count?: number
+          archery_level?: number
+          barracks_level?: number
+          battle_log?: Json
+          catapult_count?: number
+          created_at?: string
+          knight_count?: number
+          last_player_attack?: string | null
+          last_raid_check?: string
+          losses?: number
+          militia_count?: number
+          scout_target?: Json | null
+          scouted_at?: string | null
+          swordsman_count?: number
+          town_hall_level?: number
+          updated_at?: string
+          user_id: string
+          wall_level?: number
+          watchtower_level?: number
+          wins?: number
+        }
+        Update: {
+          archer_count?: number
+          archery_level?: number
+          barracks_level?: number
+          battle_log?: Json
+          catapult_count?: number
+          created_at?: string
+          knight_count?: number
+          last_player_attack?: string | null
+          last_raid_check?: string
+          losses?: number
+          militia_count?: number
+          scout_target?: Json | null
+          scouted_at?: string | null
+          swordsman_count?: number
+          town_hall_level?: number
+          updated_at?: string
+          user_id?: string
+          wall_level?: number
+          watchtower_level?: number
+          wins?: number
+        }
+        Relationships: []
+      }
       match_players: {
         Row: {
           answers: Json
@@ -332,6 +401,83 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _kingdom_award_xp: {
+        Args: { p_amount: number; p_user: string }
+        Returns: undefined
+      }
+      _kingdom_building_next: {
+        Args: { p_building: string; p_current_level: number }
+        Returns: {
+          cost: number
+          is_max: boolean
+          min_player_level: number
+        }[]
+      }
+      _kingdom_ensure: {
+        Args: { p_user: string }
+        Returns: {
+          archer_count: number
+          archery_level: number
+          barracks_level: number
+          battle_log: Json
+          catapult_count: number
+          created_at: string
+          knight_count: number
+          last_player_attack: string | null
+          last_raid_check: string
+          losses: number
+          militia_count: number
+          scout_target: Json | null
+          scouted_at: string | null
+          swordsman_count: number
+          town_hall_level: number
+          updated_at: string
+          user_id: string
+          wall_level: number
+          watchtower_level: number
+          wins: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "kingdom_states"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      _kingdom_formation_power: {
+        Args: {
+          archer: number
+          catapult: number
+          is_defender: boolean
+          knight: number
+          militia: number
+          swordsman: number
+          wall: number
+          watch: number
+        }
+        Returns: number
+      }
+      _kingdom_generate_rival: {
+        Args: { p_player_level: number }
+        Returns: Json
+      }
+      _kingdom_row_to_json: {
+        Args: { ks: Database["public"]["Tables"]["kingdom_states"]["Row"] }
+        Returns: Json
+      }
+      _kingdom_spend_xp: {
+        Args: { p_cost: number; p_user: string }
+        Returns: undefined
+      }
+      _kingdom_unit_info: {
+        Args: { p_unit: string }
+        Returns: {
+          cost: number
+          min_player_level: number
+          req_building: string
+          req_level: number
+        }[]
+      }
       add_xp_rpc: { Args: { amount: number }; Returns: undefined }
       get_leaderboard: {
         Args: { p_limit?: number }
@@ -355,6 +501,14 @@ export type Database = {
         }[]
       }
       get_match_questions: { Args: { p_match_id: string }; Returns: Json }
+      kingdom_attack_rpc: { Args: never; Returns: Json }
+      kingdom_build_rpc: { Args: { p_building: string }; Returns: Json }
+      kingdom_resolve_raids_rpc: { Args: never; Returns: Json }
+      kingdom_scout_rpc: { Args: never; Returns: Json }
+      kingdom_train_rpc: {
+        Args: { p_quantity: number; p_unit: string }
+        Returns: Json
+      }
       purchase_game_rpc: { Args: { p_game_id: string }; Returns: undefined }
       submit_match_answer: {
         Args: {
