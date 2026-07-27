@@ -1,8 +1,3 @@
-bash
-
-cat /home/claude/work/repo_clone/src/pages/KingdomPage.tsx
-Output
-
 import { useState, useEffect, useCallback } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
