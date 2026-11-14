@@ -4,6 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Mail, Lock, User, ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 function friendlyError(message: string): string {
   const m = message.toLowerCase();
@@ -192,15 +193,17 @@ export default function AuthPage() {
               minLength={6}
               disabled={loading}
             />
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
-              className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground"
-              tabIndex={-1}
+              aria-pressed={showPassword}
+              className="absolute right-1 top-1 min-h-11 min-w-11 text-muted-foreground hover:text-foreground"
             >
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            </button>
+            </Button>
           </div>
 
           <button

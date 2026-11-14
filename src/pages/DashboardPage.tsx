@@ -114,8 +114,9 @@ export default function DashboardPage() {
             </div>
             <p className="mt-2 text-xs text-muted-foreground">{xpForNext - currentProgress} XP until level {profile.level + 1}</p>
 
-            <div className="mt-6">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Continue learning</p>
+            <section className="mt-6" aria-labelledby="navigation-heading">
+              <h2 id="navigation-heading" className="sr-only">Navigation</h2>
+              <h3 className="text-xs font-normal uppercase tracking-wider text-muted-foreground mb-2">Continue learning</h3>
               <div className="flex items-center gap-4">
                 <div className="text-4xl">{continueSubject.icon}</div>
                 <div className="flex-1 min-w-0">
@@ -129,7 +130,7 @@ export default function DashboardPage() {
                   Continue <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
-            </div>
+            </section>
           </motion.section>
 
           <motion.section

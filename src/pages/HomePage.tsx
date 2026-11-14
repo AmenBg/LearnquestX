@@ -81,7 +81,7 @@ export default function HomePage() {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
                 {f.icon}
               </div>
-              <h3 className="mb-2 font-semibold text-foreground">{f.title}</h3>
+              <h2 className="mb-2 font-semibold text-foreground">{f.title}</h2>
               <p className="text-sm text-muted-foreground">{f.desc}</p>
             </motion.div>
           ))}

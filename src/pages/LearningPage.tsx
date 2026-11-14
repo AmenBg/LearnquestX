@@ -209,7 +209,7 @@ export default function LearningPage() {
         <div className="flex min-h-screen items-center justify-center pt-16">
           <div className="text-center">
             <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-primary" />
-            <p className="text-lg font-semibold text-foreground">Generating exercises...</p>
+            <h1 className="text-lg font-semibold text-foreground">Generating exercises...</h1>
             <p className="text-sm text-muted-foreground">{subject?.icon} {subject?.name}</p>
           </div>
         </div>
@@ -314,7 +314,7 @@ export default function LearningPage() {
                 </span>
               )}
             </div>
-            <h2 className="mb-6 text-lg font-bold text-foreground">{step.question}</h2>
+            <h2 id="exercise-question" className="mb-6 text-lg font-bold text-foreground">{step.question}</h2>
 
             {step.type === 'mcq' && step.options && (
               <div className="mb-6 grid gap-3">
@@ -349,6 +349,8 @@ export default function LearningPage() {
                   onKeyDown={e => { if (e.key === 'Enter' && !answered) submitAnswer(); }}
                   disabled={answered}
                   placeholder="Type your answer…"
+                  aria-label="Your answer"
+                  aria-describedby="exercise-question"
                   className={`w-full rounded-xl border p-4 text-base font-medium bg-muted/50 text-foreground outline-none transition-all ${
                     answered
                       ? wasCorrect
@@ -356,7 +358,6 @@ export default function LearningPage() {
                         : 'border-destructive bg-destructive/10'
                       : 'border-border focus:border-primary/50'
                   }`}
-                  autoFocus
                 />
                 {!answered && (
                   <button onClick={() => submitAnswer()} disabled={!writtenInput.trim()}

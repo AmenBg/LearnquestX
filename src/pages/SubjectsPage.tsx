@@ -48,7 +48,7 @@ export default function SubjectsPage() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="text-xl font-bold text-foreground">{CODE_SUBJECT.name}</h3>
+                <h2 className="text-xl font-bold text-foreground">{CODE_SUBJECT.name}</h2>
                 <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold text-primary uppercase">New</span>
               </div>
               <p className="text-sm text-muted-foreground mt-0.5">{CODE_SUBJECT.description}</p>
@@ -74,7 +74,7 @@ export default function SubjectsPage() {
                 {subject.icon}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-foreground">{subject.name}</h3>
+                <h2 className="font-bold text-foreground">{subject.name}</h2>
                 <p className="text-sm text-muted-foreground truncate">{subject.description}</p>
               </div>
               <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
