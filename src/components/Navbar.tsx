@@ -4,6 +4,7 @@ import { t } from '@/lib/i18n';
 import { Zap, Home, BookOpen, Trophy, Menu, X, Gamepad2, Settings, LogIn, Award, GraduationCap } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
 
 export default function Navbar() {
   const { language, profile, authUser } = useApp();
@@ -67,14 +68,17 @@ export default function Navbar() {
           )}
         </div>
 
-        <button
-          className="md:hidden text-foreground"
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="md:hidden min-h-11 min-w-11 text-foreground"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
         >
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        </Button>
       </div>
 
       <AnimatePresence>
